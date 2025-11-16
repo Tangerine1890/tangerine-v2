@@ -1,0 +1,3615 @@
+=== package.json ===
+{
+  "name": "tangerine-vite",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^5.1.0",
+    "autoprefixer": "^10.4.22",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "playwright": "^1.56.1",
+    "postcss": "^8.5.6",
+    "rollup-plugin-visualizer": "^6.0.5",
+    "tailwindcss": "^3.4.14",
+    "vite": "^7.2.2",
+    "vite-plugin-compression": "^0.5.1"
+  }
+}
+
+=== vite.config.js ===
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import compression from 'vite-plugin-compression';
+import { visualizer } from 'rollup-plugin-visualizer';
+
+export default defineConfig(({ mode }) => ({
+  plugins: [
+    react(),
+    compression({
+      algorithm: 'brotliCompress',
+      filter: (file) => file.endsWith('.js') || file.endsWith('.css'),
+      deleteOriginFile: false,
+    }),
+    visualizer({
+      filename: 'dist/stats.html',
+      template: 'treemap',
+      gzipSize: true,
+      brotliSize: true,
+      open: false,
+    }),
+  ],
+  build: {
+    target: 'es2019',
+    sourcemap: mode === 'development',
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+        },
+      },
+    },
+  },
+}));
+
+=== tailwind.config.js ===
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    './index.html',
+    './src/**/*.{js,jsx,ts,tsx}',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+
+
+=== src/app/utils/videoManager.js ===
+const hasWindow = () => typeof window !== 'undefined';
+
+class VideoManager {
+  constructor(maxConcurrent = 3) {
+    this.maxConcurrent = maxConcurrent;
+    this.loading = new Set();
+    this.cache = new Map();
+    this.queue = [];
+    this.isIosTelegram = this.detectIosTelegram();
+  }
+
+  detectIosTelegram() {
+    if (!hasWindow()) return false;
+    try {
+      if (window.Telegram?.WebApp?.platform) {
+        return window.Telegram.WebApp.platform.toLowerCase() === 'ios';
+      }
+    } catch (error) {
+      /* ignore */
+    }
+    try {
+      return /iphone|ipad|ipod/i.test(window.navigator.userAgent || '');
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async loadVideo(src, options = {}) {
+    if (!hasWindow()) return null;
+
+    if (this.cache.has(src)) {
+      const cached = this.cache.get(src);
+      if (cached.blob && !cached.error) {
+        return cached.blob;
+      }
+    }
+
+    if (this.loading.size >= this.maxConcurrent) {
+      await new Promise((resolve) => this.queue.push(resolve));
+    }
+
+    this.loading.add(src);
+    try {
+      const response = await fetch(src, options.fetchOptions);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      this.cache.set(src, { blob: objectUrl, error: null });
+      return objectUrl;
+    } catch (error) {
+      this.cache.set(src, { blob: null, error });
+      throw error;
+    } finally {
+      this.loading.delete(src);
+      if (this.queue.length > 0) {
+        const next = this.queue.shift();
+        next();
+      }
+    }
+  }
+
+  preloadVideo(src, options = {}) {
+    if (this.cache.has(src)) return;
+    this.loadVideo(src, options).catch(() => {});
+  }
+
+  async prepareVideo(videoElement, src, options = {}) {
+    if (!videoElement) return;
+
+    try {
+      videoElement.playsInline = true;
+      videoElement.muted = true;
+      videoElement.defaultMuted = true;
+      videoElement.setAttribute('playsinline', '');
+      videoElement.setAttribute('muted', '');
+      videoElement.setAttribute('webkit-playsinline', '');
+
+      const useDirectSrc = options.forceDirectSrc || this.isIosTelegram;
+      if (useDirectSrc) {
+        videoElement.src = src;
+      } else {
+        const objectUrl = await this.loadVideo(src, options);
+        videoElement.src = objectUrl;
+      }
+
+      return new Promise((resolve, reject) => {
+        const cleanup = () => {
+          videoElement.removeEventListener('loadeddata', onLoaded);
+          videoElement.removeEventListener('error', onError);
+        };
+
+        const onLoaded = () => {
+          cleanup();
+          resolve();
+        };
+
+        const onError = (event) => {
+          cleanup();
+          reject(event?.error || new Error('video_load_error'));
+        };
+
+        try {
+          videoElement.preload = 'auto';
+          videoElement.currentTime = 0;
+          videoElement.addEventListener('loadeddata', onLoaded, { once: true });
+          videoElement.addEventListener('error', onError, { once: true });
+          videoElement.load();
+        } catch (error) {
+          cleanup();
+          reject(error);
+        }
+      });
+    } catch (error) {
+      console.warn('Video prepare failed:', error);
+      throw error;
+    }
+  }
+}
+
+const globalVideoManager = hasWindow()
+  ? (window.videoManager ||= new VideoManager(3))
+  : new VideoManager(3);
+
+export const getVideoManager = () => globalVideoManager;
+
+export const getPreferredPreload = () => {
+  if (!hasWindow()) return 'metadata';
+  try {
+    const nav = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (nav) {
+      if (nav.saveData) return 'metadata';
+      const type = (nav.effectiveType || '').toLowerCase();
+      if (type.includes('4g') || type.includes('wifi')) return 'auto';
+      return 'metadata';
+    }
+  } catch (error) {
+    /* ignore */
+  }
+  return 'metadata';
+};
+
+export default VideoManager;
+
+=== src/app/utils/analytics.js ===
+const hasWindow = () => typeof window !== 'undefined';
+
+const ensureMetricsStore = () => {
+  if (!hasWindow()) return [];
+  if (!window.__mediaMetrics) {
+    window.__mediaMetrics = [];
+  }
+  return window.__mediaMetrics;
+};
+
+const UMAMI_WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID || '75e01154-ec06-4bdf-bc72-4b7fb1157e5b';
+const CLARITY_TAG_ID = import.meta.env.VITE_CLARITY_TAG_ID || 'u2rza6fjql';
+const SHOULD_REGISTER_SW = import.meta.env.PROD === true;
+
+export const trackEvent = (eventName, eventData = {}) => {
+  if (!hasWindow()) return;
+  try {
+    if (typeof window.umami !== 'undefined' && typeof window.umami.track === 'function') {
+      window.umami.track(eventName, eventData);
+    }
+  } catch (error) {
+    console.warn('trackEvent failed', error);
+  }
+};
+
+export const logMediaMetric = (productId, mediaIndex, eventName) => {
+  try {
+    const metrics = ensureMetricsStore();
+    const item = {
+      productId,
+      mediaIndex,
+      eventName,
+      ts: Date.now(),
+      perf: hasWindow() && typeof performance !== 'undefined' ? performance.now() : 0,
+    };
+    metrics.push(item);
+
+    if (hasWindow()) {
+      try {
+        window.localStorage.setItem(
+          'tangerine_media_metrics',
+          JSON.stringify(metrics.slice(-200)),
+        );
+      } catch (storageError) {
+        /* ignore */
+      }
+      console.debug('mediaMetric', item);
+    }
+  } catch (error) {
+    /* ignore metric failures */
+  }
+};
+
+export const downloadMediaMetrics = () => {
+  if (!hasWindow()) return;
+  try {
+    const metrics = ensureMetricsStore();
+    const data = JSON.stringify(metrics);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `tangerine_media_metrics_${Date.now()}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.warn('Failed to export media metrics', error);
+  }
+};
+
+export const registerServiceWorker = () => {
+  if (!hasWindow()) return;
+  if (!SHOULD_REGISTER_SW) return;
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then((reg) => console.info('ServiceWorker registered', reg.scope))
+      .catch((err) => console.warn('SW register failed', err));
+  } catch (error) {
+    console.warn('SW registration exception', error);
+  }
+};
+
+export const disableUmamiForOwner = (attempt = 0) => {
+  if (!hasWindow()) return false;
+
+  try {
+    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    if (tgUser?.username && tgUser.username.toLowerCase() === 'tangerine_212') {
+      window.localStorage?.setItem('umami.disabled', '1');
+      return true;
+    }
+  } catch (error) {
+    console.warn('Umami owner check failed', error);
+  }
+
+  if (attempt < 3) {
+    window.setTimeout(() => disableUmamiForOwner(attempt + 1), 800);
+  }
+
+  return false;
+};
+
+const loadAnalyticsScripts = () => {
+  if (!hasWindow()) return;
+
+  if (!UMAMI_WEBSITE_ID && !CLARITY_TAG_ID) {
+    return;
+  }
+
+  try {
+    if (UMAMI_WEBSITE_ID) {
+      const umami = document.createElement('script');
+      umami.defer = true;
+      umami.src = 'https://cloud.umami.is/script.js';
+      umami.setAttribute('data-website-id', UMAMI_WEBSITE_ID);
+      document.head.appendChild(umami);
+    }
+
+    if (CLARITY_TAG_ID) {
+      (function (c, l, a, r, i, t, y) {
+        c[a] = c[a] || function () {
+          (c[a].q = c[a].q || []).push(arguments);
+        };
+        t = l.createElement(r);
+        t.async = 1;
+        t.src = `https://www.clarity.ms/tag/${i}`;
+        y = l.getElementsByTagName(r)[0];
+        y.parentNode.insertBefore(t, y);
+      }(window, document, 'clarity', 'script', CLARITY_TAG_ID));
+    }
+  } catch (error) {
+    console.warn('Failed to load analytics scripts', error);
+  }
+};
+
+export const scheduleDeferredAnalyticsLoad = () => {
+  if (!hasWindow()) return undefined;
+
+  let timeoutId;
+  let loadHandler;
+
+  const handleLoad = () => {
+    disableUmamiForOwner();
+    timeoutId = window.setTimeout(loadAnalyticsScripts, 3000);
+  };
+
+  if (document.readyState === 'complete') {
+    handleLoad();
+  } else {
+    loadHandler = () => {
+      window.removeEventListener('load', loadHandler);
+      handleLoad();
+    };
+    window.addEventListener('load', loadHandler);
+  }
+
+  return () => {
+    if (timeoutId) {
+      window.clearTimeout(timeoutId);
+    }
+    if (loadHandler) {
+      window.removeEventListener('load', loadHandler);
+    }
+  };
+};
+
+export const LOGO_URL = 'https://i.imgur.com/opUOZzu.jpeg';
+
+=== src/app/utils/storage.js ===
+import {
+  CART_STORAGE_KEY,
+  DELIVERY_CITY_STORAGE_KEY,
+  ORDER_HISTORY_STORAGE_KEY,
+  PAYMENT_METHOD_STORAGE_KEY,
+  PROMO_CODE_STORAGE_KEY,
+  THEME_STORAGE_KEY,
+  WISHLIST_STORAGE_KEY,
+} from '../constants/index.js';
+
+const ensureWindow = () => (typeof window !== 'undefined' ? window : undefined);
+
+const getStorageBackend = () => {
+  const win = ensureWindow();
+  if (!win) return null;
+
+  if (win.storage && typeof win.storage.get === 'function' && typeof win.storage.set === 'function') {
+    return win.storage;
+  }
+
+  try {
+    return {
+      async get(key) {
+        const value = win.localStorage.getItem(key);
+        return value != null ? { value } : null;
+      },
+      async set(key, value) {
+        win.localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+        return true;
+      },
+    };
+  } catch (error) {
+    console.warn('No storage backend available', error);
+    return null;
+  }
+};
+
+const storage = getStorageBackend();
+
+const safeParse = (value, fallback) => {
+  try {
+    return value != null ? JSON.parse(value) : fallback;
+  } catch (error) {
+    return fallback;
+  }
+};
+
+export const StorageManager = {
+  async saveCart(cart) {
+    if (!storage) return false;
+    try {
+      await storage.set(CART_STORAGE_KEY, cart);
+      return true;
+    } catch (error) {
+      console.error('Storage error:', error);
+      return false;
+    }
+  },
+
+  async loadCart() {
+    if (!storage) return [];
+    try {
+      const result = await storage.get(CART_STORAGE_KEY);
+      return safeParse(result?.value, []);
+    } catch (error) {
+      return [];
+    }
+  },
+
+  async saveDeliveryCity(city) {
+    if (!storage) return false;
+    try {
+      await storage.set(DELIVERY_CITY_STORAGE_KEY, city);
+      return true;
+    } catch (error) {
+      console.error('Storage error:', error);
+      return false;
+    }
+  },
+
+  async loadDeliveryCity() {
+    if (!storage) return 'rabat';
+    try {
+      const result = await storage.get(DELIVERY_CITY_STORAGE_KEY);
+      return result?.value || 'rabat';
+    } catch (error) {
+      return 'rabat';
+    }
+  },
+
+  async savePaymentMethod(method) {
+    if (!storage) return false;
+    try {
+      await storage.set(PAYMENT_METHOD_STORAGE_KEY, method);
+      return true;
+    } catch (error) {
+      console.error('Storage error:', error);
+      return false;
+    }
+  },
+
+  async loadPaymentMethod() {
+    if (!storage) return 'cash';
+    try {
+      const result = await storage.get(PAYMENT_METHOD_STORAGE_KEY);
+      return result?.value || 'cash';
+    } catch (error) {
+      return 'cash';
+    }
+  },
+
+  async savePromoCode(code) {
+    if (!storage) return false;
+    try {
+      await storage.set(PROMO_CODE_STORAGE_KEY, code);
+      return true;
+    } catch (error) {
+      console.error('Storage error:', error);
+      return false;
+    }
+  },
+
+  async loadPromoCode() {
+    if (!storage) return '';
+    try {
+      const result = await storage.get(PROMO_CODE_STORAGE_KEY);
+      return result?.value || '';
+    } catch (error) {
+      return '';
+    }
+  },
+
+  async saveWishlist(wishlist) {
+    if (!storage) return false;
+    try {
+      await storage.set(WISHLIST_STORAGE_KEY, wishlist);
+      return true;
+    } catch (error) {
+      console.error('Storage error:', error);
+      return false;
+    }
+  },
+
+  async loadWishlist() {
+    if (!storage) return [];
+    try {
+      const result = await storage.get(WISHLIST_STORAGE_KEY);
+      return safeParse(result?.value, []);
+    } catch (error) {
+      return [];
+    }
+  },
+
+  async saveOrderHistory(orders) {
+    if (!storage) return false;
+    try {
+      await storage.set(ORDER_HISTORY_STORAGE_KEY, orders);
+      return true;
+    } catch (error) {
+      console.error('Storage error:', error);
+      return false;
+    }
+  },
+
+  async loadOrderHistory() {
+    if (!storage) return [];
+    try {
+      const result = await storage.get(ORDER_HISTORY_STORAGE_KEY);
+      return safeParse(result?.value, []);
+    } catch (error) {
+      return [];
+    }
+  },
+
+  async saveTheme(theme) {
+    if (!storage) return false;
+    try {
+      await storage.set(THEME_STORAGE_KEY, theme);
+      return true;
+    } catch (error) {
+      console.error('Storage error:', error);
+      return false;
+    }
+  },
+
+  async loadTheme() {
+    if (!storage) return 'dark';
+    try {
+      const result = await storage.get(THEME_STORAGE_KEY);
+      return result?.value || 'dark';
+    } catch (error) {
+      return 'dark';
+    }
+  },
+};
+
+=== src/app/data/products.js ===
+export const PRODUCTS = [
+  {
+    id: 't1',
+    category: 'wpff',
+    name: 'Tropicali',
+    emoji: '🥭',
+    badge: 'Sold out soon!',
+    media: [
+      'https://file.garden/aRCOOh-cGER2BR_t/PICALI00%20(1)%20(1).mp4',
+      'https://file.garden/aRCOOh-cGER2BR_t/tropicali_2.mp4',
+      'https://file.garden/aRCOOh-cGER2BR_t/tropicali_3.mp4'
+    ],
+    posters: [
+      'https://file.garden/aRCOOh-cGER2BR_t/IMG_1258_converted.avif',
+      'https://file.garden/aRCOOh-cGER2BR_t/IMG_1259_converted.avif',
+      'https://file.garden/aRCOOh-cGER2BR_t/IMG_1248.avif'
+    ],
+    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1241.avif',
+    desc: 'Profil tropical intense avec notes de mangue fraîche et fruits exotiques. Effet énergisant et créatif.'
+  },
+  {
+    id: 't2',
+    category: 'wpff',
+    name: 'Kush Mints',
+    emoji: '🍵',
+    media: [
+      'https://file.garden/aRCOOh-cGER2BR_t/kush_1.mp4',
+      'https://file.garden/aRCOOh-cGER2BR_t/kush_2.mp4'
+    ],
+    posters: [
+      'https://file.garden/aRCOOh-cGER2BR_t/IMG_1239.avif',
+      'https://file.garden/aRCOOh-cGER2BR_t/IMG_1243.avif'
+    ],
+    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1239.avif',
+    desc: 'Arômes mentholés et terreux avec notes de cookies. Relaxation profonde et sensation apaisante prolongée.'
+  },
+  {
+    id: 'ds1',
+    category: 'doublestatic',
+    name: 'Tropi Tangie',
+    emoji: '🍊',
+    badge: 'Sold out soon!',
+    media: ['https://file.garden/aRCOOh-cGER2BR_t/tropi_tangie.mp4'],
+    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1254.avif'],
+    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1254.avif',
+    desc: "Explosion d'agrumes et tangerine juteuse. Parfait pour la journée, énergisant et euphorisant."
+  },
+  {
+    id: 'ds2',
+    category: 'doublestatic',
+    name: 'Miracle Alien Cookies',
+    emoji: '🍪',
+    media: ['https://file.garden/aRCOOh-cGER2BR_t/mac.mp4'],
+    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1245%20(1).avif'],
+    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1245%20(1).avif',
+    desc: 'Saveur gourmande de cookies fraîchement cuits et crème onctueuse. Une expérience douce et réconfortante.'
+  },
+  {
+    id: 'ds3',
+    category: 'doublestatic',
+    name: 'Tchikita Banana',
+    emoji: '🍌',
+    media: ['https://file.garden/aRCOOh-cGER2BR_t/banana.mp4'],
+    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1247.avif'],
+    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1247.avif',
+    desc: 'Douceur fruitée de banane mûre avec finale sucrée. Effet relaxant et apaisant.'
+  },
+  {
+    id: 'ds4',
+    category: 'doublestatic',
+    name: 'Gelato Cheesecake',
+    emoji: '🍰',
+    media: ['https://file.garden/aRCOOh-cGER2BR_t/cheesecake.mp4'],
+    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1253.avif'],
+    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1253.avif',
+    desc: 'Texture crémeuse et profil sucré avec arômes de dessert raffiné. Une douceur irrésistible.'
+  },
+  {
+    id: 'ds5',
+    category: 'doublestatic',
+    name: 'Tropicana Cherry',
+    emoji: '🍒',
+    media: ['https://file.garden/aRCOOh-cGER2BR_t/cherry.mp4'],
+    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1252.avif'],
+    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1252.avif',
+    desc: 'Cerise tropicale juteuse et sucrée avec finale rafraîchissante. Équilibre parfait.'
+  },
+  {
+    id: 'ff1',
+    category: 'freshfrozen',
+    name: 'Grape Pie X Biscotti',
+    emoji: '🍇',
+    media: ['https://file.garden/aRCOOh-cGER2BR_t/grape.mp4'],
+    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1246.avif'],
+    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1246.avif',
+    desc: 'Raisin doux mélangé à des notes de biscuits croquants. Harmonie subtile et saveur élégante.'
+  },
+  {
+    id: 'acc1',
+    category: 'accessoires',
+    name: 'TerpWrap',
+    emoji: '🟠',
+    media: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG'],
+    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG'],
+    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG',
+    desc: 'Protégez le drip. Préservez les terpènes. Emballage premium conçu pour garder vos concentrés purs, puissants et riches en terpènes.'
+  },
+  {
+    id: 'acc2',
+    category: 'accessoires',
+    name: 'Wipes',
+    emoji: '🧼',
+    media: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG'],
+    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG'],
+    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG',
+    desc: 'Fini les soucis collants. Élimine facilement les traces 🍯 ou 🍫 pour garder vos doigts impeccables.'
+  }
+];
+
+=== src/app/constants/index.js ===
+export const PRICES_PER_CATEGORY = {
+  wpff: 18,
+  doublestatic: 14,
+  freshfrozen: 8,
+  accessoires: 0,
+};
+
+export const PRICES = PRICES_PER_CATEGORY;
+
+export const DELIVERY_PRICES = {
+  rabat: { name: 'Rabat', price: 0, emoji: '👑', featured: true, estimatedDays: 1 },
+  casablanca: { name: 'Casablanca', price: 50, emoji: '🏙️', estimatedDays: 1 },
+  marrakech: { name: 'Marrakech', price: 150, emoji: '🕌', estimatedDays: 2 },
+  agadir: { name: 'Agadir', price: 200, emoji: '🏖️', estimatedDays: 2 },
+  tangier: { name: 'Tanger', price: 100, emoji: '⛵', estimatedDays: 1 },
+};
+
+export const PROMO_CODES = {
+  '420BLAZE': { discount: 0.2, label: '-20%' },
+  'HAPPYWEED': { discount: 0.1, label: '-10%' },
+  'ORANGEPOWER': { discount: 0.12, label: '-12%' },
+  'HARAGAZZ': { discount: 0.15, label: '-15%' },
+  'WELCOME10': { discount: 0.1, label: '-10%' },
+};
+
+export const QUANTITY_OPTIONS = [5, 10, 20];
+export const MIN_QUANTITY = 5;
+export const MIN_SPEND = 200;
+
+export const WELCOME_STORAGE_KEY = 'tangerine_welcome_shown';
+export const THEME_STORAGE_KEY = 'tangerine_theme';
+export const CART_STORAGE_KEY = 'tangerine_cart';
+export const WISHLIST_STORAGE_KEY = 'tangerine_wishlist';
+export const FAVORITES_STORAGE_KEY = 'tangerine_favorites';
+export const DELIVERY_CITY_STORAGE_KEY = 'tangerine_delivery_city';
+export const PAYMENT_METHOD_STORAGE_KEY = 'tangerine_payment_method';
+export const PROMO_CODE_STORAGE_KEY = 'tangerine_promo_code';
+export const ORDER_HISTORY_STORAGE_KEY = 'tangerine_order_history';
+export const USER_STORAGE_KEY = 'tangerine_user';
+
+export const CATEGORIES = [
+  { id: 'all', label: 'Tous', emoji: '✨', gradient: 'from-[#f97316] to-[#16a34a]' },
+  { id: 'wpff', label: 'WPFF', emoji: '💎', gradient: 'from-[#2563eb] to-[#06b6d4]' },
+  { id: 'doublestatic', label: 'Double Static', emoji: '⚡', gradient: 'from-yellow-500 to-orange-500' },
+  { id: 'freshfrozen', label: 'Fresh Frozen', emoji: '❄️', gradient: 'from-[#2563eb] to-[#06b6d4]' },
+  { id: 'accessoires', label: 'Accessoires', emoji: '🧰', gradient: 'from-[#f97316] to-[#ec4899]' },
+];
+
+=== src/lib/registry.js ===
+const ensureWindow = () => (typeof window !== 'undefined' ? window : undefined);
+
+export const ensureTangerineNamespace = () => {
+  const win = ensureWindow();
+  if (!win) return;
+
+  if (!win.Tangerine) {
+    win.Tangerine = { components: {} };
+  } else if (!win.Tangerine.components) {
+    win.Tangerine.components = {};
+  }
+
+  if (!win.registerTangerineComponent) {
+    win.registerTangerineComponent = (name, component) => {
+      win.Tangerine.components[name] = component;
+      return component;
+    };
+  }
+
+  return win.Tangerine.components;
+};
+
+export const registerTangerineComponent = (name, componentFactory) => {
+  const win = ensureWindow();
+  if (!win) {
+    return componentFactory;
+  }
+
+  const components = ensureTangerineNamespace();
+  components[name] = componentFactory;
+  return componentFactory;
+};
+
+=== src/app/components/ProductCard.jsx ===
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { registerTangerineComponent } from '../../lib/registry.js';
+import {
+  PRICES,
+  QUANTITY_OPTIONS,
+} from '../constants/index.js';
+import {
+  logMediaMetric,
+  trackEvent,
+} from '../utils/analytics.js';
+import { WishlistButton } from './WishlistButton.jsx';
+
+const ProductCardComponent = memo(({
+  product,
+  onAddToCart,
+  onAnimateAdd,
+  onViewDetails,
+  isInWishlist,
+  onToggleWishlist,
+  isInitiallyVisible = false,
+  isPriority = false,
+}) => {
+  const [videoState, setVideoState] = useState('thumbnail');
+  const [isVisible, setIsVisible] = useState(isInitiallyVisible);
+  const videoRef = useRef(null);
+  const cardRef = useRef(null);
+  const observerRef = useRef(null);
+  const productKey = useMemo(
+    () => product.id || product.name || 'unknown',
+    [product.id, product.name],
+  );
+  const isAccessory = product.category === 'accessoires';
+  const imageLoading = isPriority ? 'eager' : 'lazy';
+  const imageFetchPriority = isPriority ? 'high' : 'auto';
+  const videoPreload = isPriority ? 'auto' : 'metadata';
+  const videoFetchPriority = isPriority ? 'high' : 'low';
+
+  const forcePlay = useCallback((reason, retryCount = 0) => {
+    const video = videoRef.current;
+    if (!video || videoState === 'error') {
+      return;
+    }
+
+    video.muted = true;
+    video.playsInline = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+
+    video
+      .play()
+      .then(() => {
+        logMediaMetric(productKey, 0, `play_success_${reason}`);
+      })
+      .catch((error) => {
+        logMediaMetric(productKey, 0, `play_error_${reason}`);
+        if (retryCount < 5 && (isVisible || isInitiallyVisible)) {
+          const delay = 200 * (retryCount + 1);
+          setTimeout(() => forcePlay(reason, retryCount + 1), delay);
+        }
+      });
+  }, [isInitiallyVisible, isVisible, productKey, videoState]);
+
+  useEffect(() => {
+    // Préparation immédiate de la vidéo comme dans la version legacy
+    if (!videoRef.current || !product.media?.[0] || videoState !== 'thumbnail') {
+      return () => {};
+    }
+
+    setVideoState('loading');
+
+    try {
+      videoRef.current.src = product.media[0];
+      logMediaMetric(productKey, 0, 'card_src_assigned');
+    } catch (error) {
+      logMediaMetric(productKey, 0, `direct_src_error_${error?.message || 'unknown'}`);
+      setVideoState('error');
+    }
+
+    trackEvent('product_view', {
+      product: product.name,
+      category: product.category,
+    });
+
+    return () => {};
+  }, [product.category, product.media, product.name, productKey, videoState]);
+
+  useEffect(() => {
+    try {
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          const [entry] = entries;
+          if (!entry || !videoRef.current) return;
+
+          setIsVisible(entry.isIntersecting);
+          logMediaMetric(productKey, 0, entry.isIntersecting ? 'observer_enter' : 'observer_exit');
+
+          if (entry.isIntersecting) {
+            // Dès qu'une carte devient visible, on force la lecture comme dans le legacy
+            forcePlay('observer');
+          } else if (videoRef.current) {
+            try {
+              videoRef.current.pause();
+              videoRef.current.currentTime = 0;
+            } catch (error) {
+              // ignore pause errors
+            }
+          }
+        },
+        {
+          threshold: [0.5],
+          rootMargin: '50px',
+        },
+      );
+    } catch (error) {
+      console.error('IntersectionObserver setup failed:', error);
+    }
+
+    if (cardRef.current && observerRef.current) {
+      observerRef.current.observe(cardRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) observerRef.current.disconnect();
+    };
+  }, [forcePlay, product.category, product.media, product.name, productKey, videoState]);
+
+  useEffect(() => {
+    if (videoState === 'loaded' && (isInitiallyVisible || isVisible)) {
+      forcePlay(isInitiallyVisible ? 'initial_loaded' : 'visible_loaded');
+    }
+  }, [forcePlay, isInitiallyVisible, isVisible, videoState]);
+
+  useEffect(() => {
+    if (isVisible) {
+      forcePlay('visibility_change');
+    }
+  }, [forcePlay, isVisible]);
+
+  const handleQuickAdd = useCallback((qty, event) => {
+    event.stopPropagation();
+
+    if (product.category === 'accessoires') {
+      onViewDetails(product);
+      trackEvent('accessory_open_details', { product: product.name });
+      return;
+    }
+
+    const button = event.currentTarget;
+    if (button) {
+      button.classList.add('tap-state');
+      setTimeout(() => button.classList.remove('tap-state'), 260);
+    }
+
+    const price = PRICES[product.category] * qty;
+    onAddToCart(product, qty, price);
+    if (onAnimateAdd && button) {
+      onAnimateAdd(product, qty, button);
+    }
+    trackEvent('quick_add_to_cart', {
+      product: product.name,
+      quantity: qty,
+      price,
+    });
+  }, [onAddToCart, onAnimateAdd, onViewDetails, product]);
+
+  const handleAccessoryCTA = useCallback((event) => {
+    event.stopPropagation();
+
+    const button = event.currentTarget;
+    if (button) {
+      button.classList.add('tap-state');
+      setTimeout(() => button.classList.remove('tap-state'), 260);
+    }
+
+    onViewDetails(product);
+    trackEvent('accessory_open_details', { product: product.name });
+  }, [onViewDetails, product]);
+
+  const handleVideoLoad = useCallback(() => {
+    setVideoState('loaded');
+    logMediaMetric(productKey, 0, 'card_loadeddata');
+  }, [productKey]);
+
+  const handleVideoError = useCallback(() => {
+    setVideoState('error');
+    logMediaMetric(productKey, 0, 'card_error');
+  }, [productKey]);
+
+  return (
+    <div
+      ref={cardRef}
+      className={`snap-center flex-shrink-0 w-80 glass rounded-3xl p-5 card-hover relative overflow-hidden group ${
+        videoState === 'loaded' && (isVisible || isInitiallyVisible) ? 'card-playing' : ''
+      }`}
+    >
+      <div className="card-halo" aria-hidden="true" />
+      {onToggleWishlist && (
+        <WishlistButton
+          product={product}
+          isInWishlist={isInWishlist}
+          onToggle={onToggleWishlist}
+        />
+      )}
+      <div
+        onClick={() => {
+          onViewDetails(product);
+          trackEvent('product_detail_view', { product: product.name });
+        }}
+        className="relative h-60 rounded-2xl overflow-hidden bg-black/30 mb-4 cursor-pointer"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => event.key === 'Enter' && onViewDetails(product)}
+      >
+        {product.badge && (
+          <div className="absolute top-3 left-3 z-20">
+            <span className="product-badge">{product.badge}</span>
+          </div>
+        )}
+        <img
+          src={product.thumbnail}
+          loading={imageLoading}
+          fetchpriority={imageFetchPriority}
+          alt={product.name}
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-300 ${
+            videoState === 'loaded' ? 'opacity-0' : 'opacity-100'
+          }`}
+        />
+
+        {product.media?.[0] && (
+          <video
+            ref={videoRef}
+            data-product-id={product.id || product.name}
+            src={product.media[0]}
+            className="absolute inset-0 w-full h-full object-cover video-smooth"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload={videoPreload}
+            poster={(product.posters && product.posters[0]) || product.thumbnail}
+            fetchpriority={videoFetchPriority}
+            onLoadedData={handleVideoLoad}
+            onError={handleVideoError}
+          />
+        )}
+
+        {videoState === 'loading' && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10">
+            <div className="w-10 h-10 border-3 border-orange-500 border-t-transparent rounded-full spinner" />
+          </div>
+        )}
+
+        {videoState === 'error' && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-red-500/10 to-transparent z-10">
+            <span className="text-4xl mb-2">⚠️</span>
+            <p className="text-white/60 text-xs">Vidéo indisponible</p>
+          </div>
+        )}
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+        <div className="absolute bottom-3 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="text-white text-sm font-semibold bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full">
+            👁️ Détails
+          </span>
+        </div>
+      </div>
+      <div className="mb-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-3xl">{product.emoji}</span>
+          <h3 className="text-white font-bold text-lg flex-1">{product.name}</h3>
+          <span
+            className={`font-bold text-xs px-2 py-1 rounded-lg ${
+              isAccessory
+                ? 'bg-white/10 text-white/80 border border-white/10'
+                : 'text-emerald-300 bg-emerald-500/20'
+            }`}
+          >
+            {isAccessory ? 'Prix à définir' : `${PRICES[product.category]}€/g`}
+          </span>
+        </div>
+        <p className="text-white/60 text-sm line-clamp-2">{product.desc}</p>
+      </div>
+
+      <div className="flex gap-3">
+        {isAccessory ? (
+          <button
+            onClick={handleAccessoryCTA}
+            className="w-full glass-cta font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2"
+          >
+            <span>🔍</span>
+            <span>Voir détails</span>
+          </button>
+        ) : (
+          QUANTITY_OPTIONS.map((qty) => (
+            <button
+              key={qty}
+              onClick={(event) => handleQuickAdd(qty, event)}
+              className="flex-1 quantity-button glass-cta font-semibold px-6 py-4 rounded-full text-base leading-tight"
+            >
+              {qty}g
+              <br />
+              <span className="block text-xs opacity-90 mt-1">{PRICES[product.category] * qty}€</span>
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+});
+
+export const ProductCard = registerTangerineComponent('ProductCard', ProductCardComponent);
+
+export default ProductCard;
+
+=== src/app/components/ProductDetailModal.jsx ===
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { registerTangerineComponent } from '../../lib/registry.js';
+import {
+  MIN_QUANTITY,
+  PRICES,
+  QUANTITY_OPTIONS,
+} from '../constants/index.js';
+import {
+  logMediaMetric,
+  trackEvent,
+} from '../utils/analytics.js';
+import {
+  getPreferredPreload,
+  getVideoManager,
+} from '../utils/videoManager.js';
+
+const videoManager = getVideoManager();
+
+const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer }) => {
+  const [selectedQuantity, setSelectedQuantity] = useState(MIN_QUANTITY);
+  const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
+  const [mediaLoaded, setMediaLoaded] = useState(false);
+  const videoRef = useRef(null);
+  const isAccessory = product?.category === 'accessoires';
+
+  useEffect(() => {
+    if (!product) return undefined;
+
+    trackEvent('product_detail_opened', { product: product.name });
+    setSelectedMediaIndex(0);
+    setMediaLoaded(false);
+
+    const src = product.media?.[0];
+    if (src && /\.(mp4|webm|ogg)(\?.*)?$/i.test(src) && videoRef.current) {
+      videoManager
+        .prepareVideo(videoRef.current, src)
+        .then(() => {
+          logMediaMetric(product.id || product.name || 'unknown', 0, 'detail_load_success');
+        })
+        .catch((error) => {
+          logMediaMetric(
+            product.id || product.name || 'unknown',
+            0,
+            'detail_load_error',
+            { error: error.message },
+          );
+        });
+    }
+
+    return () => {
+      if (videoRef.current) {
+        try {
+          videoRef.current.pause();
+          videoRef.current.currentTime = 0;
+          videoRef.current.src = '';
+          videoRef.current.load();
+        } catch (error) {
+          /* ignore */
+        }
+      }
+    };
+  }, [product]);
+
+  useEffect(() => {
+    if (!product) return;
+    const src = product.media?.[selectedMediaIndex];
+    setMediaLoaded(false);
+    if (!src) return;
+
+    if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(src)) {
+      if (videoRef.current) {
+        videoManager
+          .prepareVideo(videoRef.current, src)
+          .then(() => {
+            logMediaMetric(
+              product.id || product.name || 'unknown',
+              selectedMediaIndex,
+              'detail_swap_success',
+            );
+            setMediaLoaded(true);
+          })
+          .catch(() => {
+            // leave spinner visible
+          });
+      }
+    } else {
+      setMediaLoaded(true);
+    }
+  }, [product, selectedMediaIndex]);
+
+  const handleAddToCart = useCallback(() => {
+    if (!product) return;
+    const price = PRICES[product.category] * selectedQuantity;
+    onAddToCart(product, selectedQuantity, price);
+    trackEvent('add_to_cart_from_detail', {
+      product: product.name,
+      quantity: selectedQuantity,
+      price,
+    });
+    onClose();
+  }, [onAddToCart, onClose, product, selectedQuantity]);
+
+  const handleQuantityInput = (event) => {
+    const value = parseInt(event.target.value, 10);
+    setSelectedQuantity(Math.max(MIN_QUANTITY, Number.isNaN(value) ? MIN_QUANTITY : value));
+  };
+
+  const price = useMemo(() => (
+    product ? PRICES[product.category] * selectedQuantity : 0
+  ), [product, selectedQuantity]);
+
+  if (!product) return null;
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in-up"
+      onClick={onClose}
+    >
+      <div
+        className="glass-dark rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="relative">
+          <div
+            onClick={() => openViewer && openViewer(product, selectedMediaIndex)}
+            className="cursor-zoom-in relative w-full h-72 rounded-t-3xl overflow-hidden"
+            role="button"
+            tabIndex={0}
+          >
+            {product.media?.[selectedMediaIndex] && /\.(mp4|webm|ogg)(\?.*)?$/i.test(product.media[selectedMediaIndex]) ? (
+              <>
+                {!mediaLoaded && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-10">
+                    <div className="w-14 h-14 border-4 border-orange-500 border-t-transparent rounded-full spinner" />
+                  </div>
+                )}
+                <video
+                  key={`main-${product.id}-${selectedMediaIndex}`}
+                  ref={videoRef}
+                  className="relative w-full h-72 object-cover video-smooth"
+                  loop
+                  muted
+                  playsInline
+                  autoPlay
+                  poster={(product.posters && product.posters[selectedMediaIndex]) || product.thumbnail}
+                  fetchpriority="high"
+                  preload="auto"
+                  onLoadedMetadata={() => {
+                    if (!videoRef.current) return;
+                    videoRef.current.muted = true;
+                    videoRef.current.defaultMuted = true;
+                    videoRef.current.playsInline = true;
+                    videoRef.current.setAttribute('playsinline', '');
+                    videoRef.current.setAttribute('muted', '');
+                    videoRef.current
+                      .play()
+                      .then(() => {
+                        setMediaLoaded(true);
+                        logMediaMetric(
+                          product.id || product.name || 'unknown',
+                          selectedMediaIndex,
+                          'detail_autoplay_success',
+                        );
+                      })
+                      .catch((error) => {
+                        logMediaMetric(
+                          product.id || product.name || 'unknown',
+                          selectedMediaIndex,
+                          'detail_autoplay_failed',
+                          { error: error.message },
+                        );
+                        setTimeout(() => {
+                          videoRef.current?.play().catch(() => {});
+                        }, 500);
+                      });
+                  }}
+                />
+              </>
+            ) : (
+              <img
+                src={product.thumbnail}
+                alt={product.name}
+                loading="lazy"
+                className="w-full h-72 object-cover"
+              />
+            )}
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
+            <button
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                if (videoRef.current) {
+                  try {
+                    videoRef.current.pause();
+                    videoRef.current.currentTime = 0;
+                  } catch (error) {
+                    /* ignore */
+                  }
+                }
+                onClose();
+              }}
+              className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white hover:bg-black/80 w-12 h-12 rounded-full transition-all flex items-center justify-center text-2xl z-20 active:scale-90"
+            >
+              ✕
+            </button>
+
+            <div className="absolute bottom-4 left-6">
+              <div className="flex items-center gap-3">
+                <span className="text-5xl">{product.emoji}</span>
+                <h2 className="text-3xl font-black text-white">{product.name}</h2>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="p-4 flex gap-3 overflow-x-auto hide-scrollbar"
+            role="listbox"
+            aria-label="Sélecteur de médias"
+          >
+            {product.media?.map((mediaSrc, idx) => (
+              <button
+                key={`${mediaSrc}-${idx}`}
+                onClick={() => {
+                  setSelectedMediaIndex(idx);
+                  setMediaLoaded(false);
+                }}
+                className={`rounded-xl overflow-hidden border-2 ${
+                  selectedMediaIndex === idx
+                    ? 'border-emerald-400 ring-2 ring-emerald-300/50'
+                    : 'border-white/10 hover:border-white/30'
+                } p-0 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-300/50`}
+                style={{ minWidth: 96, minHeight: 64 }}
+                title={`Ouvrir média ${idx + 1}`}
+                role="option"
+                aria-selected={selectedMediaIndex === idx}
+                tabIndex={0}
+              >
+                {/\.(mp4|webm|ogg)(\?.*)?$/i.test(mediaSrc) ? (
+                  <video
+                    src={mediaSrc}
+                    className="w-24 h-16 object-cover video-smooth"
+                    muted
+                    defaultMuted
+                    preload={getPreferredPreload()}
+                    playsInline
+                    fetchpriority="high"
+                    poster={(product.posters && product.posters[idx]) || product.thumbnail}
+                    onPlay={(event) => {
+                      try {
+                        event.target.muted = true;
+                        event.target.defaultMuted = true;
+                        event.target.volume = 0;
+                      } catch (error) {
+                        /* ignore */
+                      }
+                    }}
+                    onLoadedMetadata={(event) => {
+                      try {
+                        const video = event.target;
+                        video.muted = true;
+                        video.defaultMuted = true;
+                        video.volume = 0;
+                        const width = video.videoWidth || 0;
+                        const height = video.videoHeight || 0;
+                        if (height > width) video.classList.add('is-portrait');
+                        else video.classList.remove('is-portrait');
+                      } catch (error) {
+                        /* ignore */
+                      }
+                    }}
+                  />
+                ) : (
+                  <img src={mediaSrc} className="w-24 h-16 object-cover" loading="lazy" alt="aperçu média" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div>
+            <h3 className="text-white font-bold text-lg mb-2">📝 Description</h3>
+            <p className="text-white/80 leading-relaxed text-sm">{product.desc}</p>
+          </div>
+
+          {isAccessory ? (
+            <div className="space-y-4">
+              <div className="glass p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                  <p className="text-white/60 text-sm mb-1">Prix indicatif</p>
+                  <p className="text-white/80 font-semibold text-lg">À définir</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="glass p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                  <p className="text-white/60 text-sm mb-1">Prix unitaire</p>
+                  <p className="gradient-text font-black text-2xl">{PRICES[product.category]}€/g</p>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-white font-bold text-lg mb-3">⚖️ Quantité (min. {MIN_QUANTITY}g)</h3>
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  {QUANTITY_OPTIONS.map((qty) => (
+                    <button
+                      key={qty}
+                      onClick={() => setSelectedQuantity(qty)}
+                      className={`glass text-white font-bold py-3 rounded-xl transition-all active:scale-95 ${
+                        selectedQuantity === qty
+                          ? 'cta-primary scale-105 shadow-lg'
+                          : 'hover:bg-white/10'
+                      }`}
+                    >
+                      {qty}g
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex gap-3">
+                  <input
+                    type="number"
+                    min={MIN_QUANTITY}
+                    value={selectedQuantity}
+                    onChange={handleQuantityInput}
+                    className="flex-1 glass text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-emerald-400 text-center font-bold"
+                    placeholder={`Min. ${MIN_QUANTITY}g`}
+                  />
+                  <div className="glass px-6 py-3 rounded-xl flex items-center">
+                    <span className="text-white font-bold text-xl">{price}€</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={handleAddToCart}
+                className="w-full glass-cta font-semibold py-4 rounded-2xl flex items-center justify-center gap-2"
+              >
+                <span>🛒</span>
+                <span>Ajouter ({price}€)</span>
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const ProductDetailModal = registerTangerineComponent(
+  'ProductDetailModal',
+  ProductDetailModalComponent,
+);
+
+export default ProductDetailModal;
+
+=== src/app/components/CartDrawer.jsx ===
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+} from 'react';
+import { registerTangerineComponent } from '../../lib/registry.js';
+import {
+  DELIVERY_PRICES,
+  MIN_QUANTITY,
+  MIN_SPEND,
+  PRICES,
+  PROMO_CODES,
+} from '../constants/index.js';
+import { trackEvent } from '../utils/analytics.js';
+import { PromoCodeInput } from './PromoCodeInput.jsx';
+import { PaymentMethodSelector } from './PaymentMethodSelector.jsx';
+
+const CartDrawerComponent = ({
+  isOpen,
+  onClose,
+  cart,
+  onUpdateQuantity,
+  onRemoveItem,
+  onCheckout,
+  deliveryCity,
+  onDeliveryCityChange,
+  paymentMethod,
+  onPaymentMethodChange,
+  appliedPromo,
+  onApplyPromo,
+  onRemovePromo,
+}) => {
+  const subtotal = useMemo(
+    () => cart.reduce((sum, item) => sum + item.totalPrice, 0),
+    [cart],
+  );
+
+  const deliveryPrice = DELIVERY_PRICES[deliveryCity].price;
+  const orderTotal = subtotal + deliveryPrice;
+
+  const discount = useMemo(() => {
+    if (appliedPromo && PROMO_CODES[appliedPromo]) {
+      return Math.round(orderTotal * PROMO_CODES[appliedPromo].discount);
+    }
+    return 0;
+  }, [appliedPromo, orderTotal]);
+
+  const total = orderTotal - discount;
+  const meetsMinimum = subtotal >= MIN_SPEND;
+  const remainingAmount = Math.max(0, MIN_SPEND - subtotal);
+  const progressPercentage = Math.min(100, (subtotal / MIN_SPEND) * 100);
+
+  const handleQuantityChange = useCallback((index, delta) => {
+    const item = cart[index];
+    const unitPrice = PRICES[item.product.category];
+    const newQuantity = Math.max(MIN_QUANTITY, item.quantity + delta);
+    onUpdateQuantity(index, newQuantity, unitPrice * newQuantity);
+    trackEvent('cart_quantity_change', {
+      product: item.product.name,
+      newQuantity,
+    });
+  }, [cart, onUpdateQuantity]);
+
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? 'hidden' : 'unset';
+    if (isOpen) {
+      trackEvent('cart_opened', { itemCount: cart.length });
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, cart.length]);
+
+  return (
+    <>
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
+          onClick={onClose}
+        />
+      )}
+
+      <div
+        className={`fixed top-0 right-0 h-full w-full max-w-md glass-dark shadow-2xl transition-transform duration-300 z-[60] flex flex-col ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">🛒</span>
+            <div>
+              <h2 className="text-2xl font-bold text-white">Panier</h2>
+              <p className="text-white/60 text-sm">{cart.length} article{cart.length > 1 ? 's' : ''}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white/60 hover:text-white text-4xl leading-none transition-all"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {cart.length === 0 ? (
+            <div className="text-center mt-20 animate-fade-in-up">
+              <div className="text-7xl mb-4 float">🛒</div>
+              <p className="text-white/60 text-lg font-semibold mb-2">Panier vide</p>
+              <p className="text-white/40 text-sm">Ajoutez des produits</p>
+            </div>
+          ) : (
+            <>
+              {cart.map((item, idx) => (
+                <div
+                  key={`${item.product.id}-${idx}`}
+                  className="glass rounded-2xl p-4 animate-slide-in-right"
+                  style={{ animationDelay: `${idx * 30}ms` }}
+                >
+                  <div className="flex gap-3 mb-3">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-orange-500/20 flex items-center justify-center text-2xl flex-shrink-0">
+                      {item.product.emoji}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-semibold text-sm truncate">{item.product.name}</p>
+                      <p className="text-emerald-300 text-xs font-bold">
+                        {item.quantity}g × {PRICES[item.product.category]}€
+                      </p>
+                      <p className="text-white/90 font-bold text-lg">{item.totalPrice}€</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        onRemoveItem(idx);
+                        trackEvent('cart_item_removed', { product: item.product.name });
+                      }}
+                      className="bg-red-500/20 hover:bg-red-500/40 text-red-400 px-3 rounded-xl transition-all self-start active:scale-90"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleQuantityChange(idx, -1)}
+                      disabled={item.quantity <= MIN_QUANTITY}
+                      className="bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg transition-all font-bold flex-1 active:scale-95"
+                    >
+                      -1g
+                    </button>
+                    <div className="flex-1 text-center">
+                      <span className="text-white font-bold text-lg">{item.quantity}g</span>
+                    </div>
+                    <button
+                      onClick={() => handleQuantityChange(idx, 1)}
+                      className="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg transition-all font-bold flex-1 active:scale-95"
+                    >
+                      +1g
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              <PromoCodeInput
+                appliedPromo={appliedPromo}
+                onApplyPromo={onApplyPromo}
+                onRemovePromo={onRemovePromo}
+              />
+
+              <PaymentMethodSelector
+                selectedMethod={paymentMethod}
+                onMethodChange={onPaymentMethodChange}
+              />
+
+              <div className="glass rounded-2xl p-4 space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xl">🚚</span>
+                  <h3 className="text-white font-bold">Livraison</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(DELIVERY_PRICES).map(([key, info]) => (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        onDeliveryCityChange(key);
+                        trackEvent('delivery_city_changed', { city: info.name });
+                      }}
+                      className={`${
+                        deliveryCity === key
+                          ? 'cta-primary scale-105 glow'
+                          : 'glass hover:bg-white/10'
+                      } text-white font-semibold py-3 px-2 rounded-xl transition-all text-sm relative active:scale-95`}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        <span>{info.emoji}</span>
+                        <span>{info.name}</span>
+                      </div>
+                      <div className={`text-xs mt-1 ${info.price === 0 ? 'text-green-300 font-bold' : 'opacity-80'}`}>
+                        {info.price === 0 ? 'GRATUIT' : `${info.price}€`}
+                      </div>
+                      {info.featured && (
+                        <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+                          ⭐
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {cart.length > 0 && (
+          <div className="border-t border-white/10 p-6 space-y-4 bg-black/30">
+            <div className="space-y-2">
+              <div className="flex justify-between text-white/80 text-sm">
+                <span>Sous-total:</span>
+                <span className="font-bold">{subtotal}€</span>
+              </div>
+              {discount > 0 && (
+                <>
+                  <div className="flex justify-between text-green-400 text-sm">
+                    <span>🎟️ Réduction:</span>
+                    <span className="font-bold">-{discount}€</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-green-400 text-xs font-semibold">
+                    <span>💚</span>
+                    <span>Vous avez économisé {discount}€ !</span>
+                  </div>
+                </>
+              )}
+              {deliveryPrice > 0 ? (
+                <>
+                  <div className="flex justify-between text-white/80 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span>{DELIVERY_PRICES[deliveryCity].emoji}</span>
+                      <span>Livraison:</span>
+                    </div>
+                    <span className="font-bold">{deliveryPrice}€</span>
+                  </div>
+                  <div className="text-white/60 text-xs">
+                    ⏱️ Livraison estimée: {DELIVERY_PRICES[deliveryCity].estimatedDays} jour{DELIVERY_PRICES[deliveryCity].estimatedDays > 1 ? 's' : ''}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 text-green-400 text-sm">
+                    <span>🎉</span>
+                    <span className="font-semibold">Livraison gratuite !</span>
+                  </div>
+                  <div className="text-white/60 text-xs">
+                    ⏱️ Livraison estimée: {DELIVERY_PRICES[deliveryCity].estimatedDays} jour{DELIVERY_PRICES[deliveryCity].estimatedDays > 1 ? 's' : ''}
+                  </div>
+                </>
+              )}
+              <div className="border-t border-white/20 pt-2 flex justify-between">
+                <span className="text-white font-bold text-lg">Total:</span>
+                <span className="gradient-text font-black text-3xl">{total}€</span>
+              </div>
+            </div>
+
+            <div className="glass rounded-xl p-3 space-y-2 animate-slide-up">
+              {meetsMinimum ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-lg">✓</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-bold text-xs">Minimum atteint</p>
+                    <p className="text-green-400 text-xs">Prêt à commander</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm">🎯</span>
+                      <p className="text-white font-bold text-xs">Min. {MIN_SPEND}€</p>
+                    </div>
+                    <p className="text-white/80 font-semibold text-xs">{subtotal}€/{MIN_SPEND}€</p>
+                  </div>
+
+                  <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="absolute inset-0 progress-bar-fill rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${progressPercentage}%` }}
+                    />
+                  </div>
+
+                  <p className="text-white/60 text-xs text-center">
+                    Ajoutez <span className="text-orange-400 font-bold">{remainingAmount.toFixed(0)}€</span> de plus
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={onCheckout}
+              disabled={!meetsMinimum}
+              className={`w-full font-bold py-4 rounded-2xl transition-all ${
+                meetsMinimum
+                  ? 'bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500 hover:from-orange-600 hover:via-pink-600 hover:to-orange-600 text-white hover:scale-105 active:scale-95 glow'
+                  : 'bg-white/10 text-white/40 cursor-not-allowed opacity-50'
+              }`}
+            >
+              {meetsMinimum ? '🚀 Commander' : `🎯 Ajoutez ${remainingAmount.toFixed(0)}€ de produits`}
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
+
+export const CartDrawer = registerTangerineComponent('CartDrawer', CartDrawerComponent);
+
+export default CartDrawer;
+
+=== src/app/components/Confetti.jsx ===
+import { useEffect } from 'react';
+import { registerTangerineComponent } from '../../lib/registry.js';
+
+const COLORS = ['#f97316', '#ec4899', '#f59e0b', '#8b5cf6', '#06b6d4'];
+
+const ConfettiComponent = ({ trigger }) => {
+  useEffect(() => {
+    if (!trigger) return;
+
+    for (let index = 0; index < 50; index += 1) {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      confetti.style.left = `${Math.random() * 100}%`;
+      confetti.style.top = '-10px';
+      confetti.style.background = COLORS[Math.floor(Math.random() * COLORS.length)];
+      confetti.style.width = `${Math.random() * 10 + 5}px`;
+      confetti.style.height = `${Math.random() * 10 + 5}px`;
+      confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+      confetti.style.animationDuration = `${Math.random() * 2 + 2}s`;
+      document.body.appendChild(confetti);
+
+      setTimeout(() => confetti.remove(), 3000);
+    }
+  }, [trigger]);
+
+  return null;
+};
+
+export const Confetti = registerTangerineComponent('Confetti', ConfettiComponent);
+
+export default Confetti;
+
+=== src/app/components/ConfirmationModal.jsx ===
+import { registerTangerineComponent } from '../../lib/registry.js';
+import {
+  DELIVERY_PRICES,
+  PRICES,
+} from '../constants/index.js';
+
+const ConfirmationModalComponent = ({
+  isOpen,
+  onConfirm,
+  onCancel,
+  cart,
+  deliveryCity,
+  total,
+  paymentMethod,
+  discount,
+  subtotal,
+  deliveryPrice,
+}) => {
+  if (!isOpen) return null;
+
+  const deliveryInfo = DELIVERY_PRICES[deliveryCity];
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[80] flex items-center justify-center p-4 animate-fade-in-up"
+      onClick={onCancel}
+    >
+      <div
+        className="glass-dark rounded-3xl max-w-md w-full animate-zoom-in max-h-[90vh] overflow-y-auto"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="p-6 border-b border-white/10">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-3xl">✅</span>
+            <h3 className="text-2xl font-bold text-white">Confirmer</h3>
+          </div>
+          <p className="text-white/60 text-sm">Vérifiez avant de valider</p>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <div className="space-y-2">
+            {cart.map((item, index) => (
+              <div key={index} className="glass rounded-xl p-3 flex items-center gap-3">
+                <span className="text-2xl">{item.product.emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm truncate">{item.product.name}</p>
+                  <p className="text-white/60 text-xs">
+                    {item.quantity}g × {PRICES[item.product.category]}€
+                  </p>
+                </div>
+                <span className="text-orange-400 font-bold text-sm">{item.totalPrice}€</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="glass rounded-xl p-4 space-y-2">
+            <div className="flex justify-between text-white/80 text-sm">
+              <span>Sous-total:</span>
+              <span className="font-bold">{subtotal}€</span>
+            </div>
+            {discount > 0 && (
+              <>
+                <div className="flex justify-between text-green-400 text-sm">
+                  <span>🎟️ Réduction:</span>
+                  <span className="font-bold">-{discount}€</span>
+                </div>
+                <div className="flex items-center gap-2 text-green-400 text-xs font-semibold">
+                  <span>💚</span>
+                  <span>Vous avez économisé {discount}€ !</span>
+                </div>
+              </>
+            )}
+            {deliveryPrice > 0 ? (
+              <>
+                <div className="flex justify-between text-white/80 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span>{deliveryInfo.emoji}</span>
+                    <span>Livraison:</span>
+                  </div>
+                  <span className="font-bold">{deliveryPrice}€</span>
+                </div>
+                <div className="text-white/60 text-xs">
+                  ⏱️ Livraison estimée: {deliveryInfo.estimatedDays} jour{deliveryInfo.estimatedDays > 1 ? 's' : ''}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 text-green-400 text-sm">
+                  <span>🎉</span>
+                  <span className="font-semibold">Livraison gratuite à {deliveryInfo.name} !</span>
+                </div>
+                <div className="text-white/60 text-xs">
+                  ⏱️ Livraison estimée: {deliveryInfo.estimatedDays} jour{deliveryInfo.estimatedDays > 1 ? 's' : ''}
+                </div>
+              </>
+            )}
+            <div className="flex justify-between text-white/80 text-sm pt-2 border-t border-white/20">
+              <span>Paiement:</span>
+              <span className="font-bold">
+                {paymentMethod === 'cash' ? '💵 Espèces' : '🪙 Crypto'}
+              </span>
+            </div>
+            <div className="border-t border-white/20 pt-2 flex justify-between">
+              <span className="text-white font-bold">Total:</span>
+              <span className="gradient-text font-black text-2xl">{total}€</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 border-t border-white/10 flex gap-3">
+          <button
+            onClick={onCancel}
+            className="flex-1 glass hover:bg-white/10 text-white font-bold py-3 rounded-xl transition-all active:scale-95"
+          >
+            Annuler
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500 hover:from-orange-600 hover:via-pink-600 hover:to-orange-600 text-white font-bold py-3 rounded-xl transition-all hover:scale-105 active:scale-95 glow"
+          >
+            ✅ Valider
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const ConfirmationModal = registerTangerineComponent(
+  'ConfirmationModal',
+  ConfirmationModalComponent,
+);
+
+export default ConfirmationModal;
+
+=== src/app/components/ContactModal.jsx ===
+import { registerTangerineComponent } from '../../lib/registry.js';
+import { trackEvent } from '../utils/analytics.js';
+
+const ContactModalComponent = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in-up"
+      onClick={onClose}
+    >
+      <div
+        className="glass-dark rounded-3xl max-w-md w-full animate-slide-up max-h-[90vh] overflow-y-auto"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="p-6 border-b border-white/10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">💬</span>
+            <h3 className="text-2xl font-bold text-white">Contact</h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white/60 hover:text-white text-3xl leading-none transition-all"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 float">
+              📱
+            </div>
+            <h4 className="text-white font-bold text-xl mb-2">Commandez maintenant</h4>
+            <p className="text-white/60 text-sm mb-6">Contactez-nous sur Telegram</p>
+          </div>
+
+          <a
+            href="https://t.me/Tangerine_212"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackEvent('contact_telegram_click')}
+            className="block w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-4 rounded-2xl transition-all hover:scale-105 active:scale-95 glow text-center"
+          >
+            📲 Ouvrir Telegram
+          </a>
+
+          <div className="glass rounded-2xl p-4 text-center">
+            <p className="text-white font-bold mb-1">@Tangerine_212</p>
+            <p className="text-white/60 text-sm">Disponible 24/7</p>
+          </div>
+
+          <div className="border-t border-white/20 pt-6">
+            <h4 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+              <span>💳</span>
+              <span>Modes de paiement acceptés</span>
+            </h4>
+
+            <div className="space-y-3">
+              <div className="glass rounded-xl p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-2xl">💵</span>
+                  <span className="text-white font-semibold">Espèces</span>
+                </div>
+                <p className="text-white/60 text-sm">Toutes devises acceptées</p>
+              </div>
+
+              <div className="glass rounded-xl p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-2xl">🪙</span>
+                  <span className="text-white font-semibold">Cryptomonnaies</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: 'Solana', icon: '◎' },
+                    { label: 'USDT', icon: '₮' },
+                    { label: 'Bitcoin', icon: '₿' },
+                    { label: 'Ethereum', icon: 'Ξ' },
+                  ].map(({ label, icon }) => (
+                    <div key={label} className="glass-dark rounded-lg p-2 text-center">
+                      <div className="text-lg mb-1">{icon}</div>
+                      <p className="text-white/80 text-xs font-semibold">{label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-4 text-white/60 text-xs">
+            <div className="flex-1 flex items-center justify-center gap-2 glass rounded-xl py-3">
+              <span>🚚</span>
+              <span>Rapide</span>
+            </div>
+            <div className="flex-1 flex items-center justify-center gap-2 glass rounded-xl py-3">
+              <span>✅</span>
+              <span>Qualité</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const ContactModal = registerTangerineComponent('ContactModal', ContactModalComponent);
+
+export default ContactModal;
+
+=== src/app/components/FilterSortBar.jsx ===
+import { useMemo, useState } from 'react';
+import { registerTangerineComponent } from '../../lib/registry.js';
+
+const clampNumber = (value, fallback) => {
+  const parsed = Number.parseInt(value, 10);
+  if (Number.isNaN(parsed)) {
+    return fallback;
+  }
+  return Math.max(0, parsed);
+};
+
+const ensureRangeOrder = (range) => {
+  if (range.min > range.max) {
+    return { min: range.min, max: range.min };
+  }
+  return range;
+};
+
+const FilterSortBarComponent = ({
+  sortBy = 'default',
+  onSortChange,
+  priceRange = { min: 0, max: 1000 },
+  onPriceRangeChange,
+}) => {
+  const [showFilters, setShowFilters] = useState(false);
+
+  const handleSortChange = (event) => {
+    onSortChange?.(event.target.value);
+  };
+
+  const handlePriceInputChange = (key) => (event) => {
+    if (!onPriceRangeChange) return;
+    const fallback = key === 'min' ? 0 : 1000;
+    const nextValue = clampNumber(event.target.value, fallback);
+    const nextRange = ensureRangeOrder({ ...priceRange, [key]: nextValue });
+    onPriceRangeChange(nextRange);
+  };
+
+  const normalizedRange = useMemo(
+    () => ensureRangeOrder(priceRange || { min: 0, max: 1000 }),
+    [priceRange],
+  );
+
+  return (
+    <div className="mb-6 space-y-3">
+      <div className="flex items-center gap-3 overflow-x-auto pb-2">
+        <button
+          type="button"
+          onClick={() => setShowFilters((prev) => !prev)}
+          className="flex-shrink-0 glass hover:bg-white/10 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-all active:scale-95 flex items-center gap-2"
+        >
+          <span>🔽</span>
+          <span>Filtres</span>
+        </button>
+
+        <select
+          value={sortBy}
+          onChange={handleSortChange}
+          className="flex-shrink-0 glass text-white px-4 py-2 rounded-xl font-semibold text-sm outline-none focus:ring-2 focus:ring-emerald-400 bg-transparent"
+        >
+          <option value="default">Trier par</option>
+          <option value="price-low">Prix: Croissant</option>
+          <option value="price-high">Prix: Décroissant</option>
+          <option value="name">Nom: A-Z</option>
+        </select>
+      </div>
+
+      {showFilters && (
+        <div className="glass rounded-2xl p-4 space-y-3 animate-slide-down">
+          <div>
+            <label className="text-white font-semibold text-sm mb-2 block" htmlFor="price-min">
+              Prix (€)
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                id="price-min"
+                type="number"
+                min="0"
+                max="1000"
+                value={normalizedRange.min}
+                onChange={handlePriceInputChange('min')}
+                className="flex-1 glass text-white px-3 py-2 rounded-xl outline-none focus:ring-2 focus:ring-emerald-400 text-sm bg-transparent"
+                placeholder="Min"
+              />
+              <span className="text-white/60">-</span>
+              <input
+                type="number"
+                min="0"
+                max="1000"
+                value={normalizedRange.max}
+                onChange={handlePriceInputChange('max')}
+                className="flex-1 glass text-white px-3 py-2 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-transparent"
+                placeholder="Max"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const FilterSortBar = registerTangerineComponent(
+  'FilterSortBar',
+  FilterSortBarComponent,
+);
+
+export default FilterSortBar;
+
+=== src/app/components/FullscreenViewer.jsx ===
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import { registerTangerineComponent } from '../../lib/registry.js';
+import {
+  logMediaMetric,
+  trackEvent,
+} from '../utils/analytics.js';
+import { getPreferredPreload } from '../utils/videoManager.js';
+
+const FullscreenViewerComponent = ({ isOpen, product, startIndex = 0, onClose }) => {
+  const [index, setIndex] = useState(startIndex || 0);
+  const containerRef = useRef(null);
+  const startX = useRef(0);
+  const deltaX = useRef(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const dragThreshold = 0.15;
+  const [isControlsVisible, setIsControlsVisible] = useState(true);
+  const controlsTimerRef = useRef(null);
+
+  const mediaCount = product?.media?.length || 0;
+
+  const resetControlsTimer = useCallback(() => {
+    if (controlsTimerRef.current) {
+      clearTimeout(controlsTimerRef.current);
+    }
+    setIsControlsVisible(true);
+    controlsTimerRef.current = setTimeout(() => {
+      setIsControlsVisible(false);
+    }, 2500);
+  }, []);
+
+  useEffect(() => {
+    setIndex(startIndex || 0);
+  }, [startIndex, product]);
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const onKey = (event) => {
+      if (event.key === 'ArrowRight') setIndex((i) => Math.min(i + 1, mediaCount - 1));
+      if (event.key === 'ArrowLeft') setIndex((i) => Math.max(i - 1, 0));
+      if (event.key === 'Escape') onClose?.();
+      resetControlsTimer();
+    };
+
+    window.addEventListener('keydown', onKey);
+    resetControlsTimer();
+
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      if (controlsTimerRef.current) {
+        clearTimeout(controlsTimerRef.current);
+      }
+    };
+  }, [isOpen, mediaCount, onClose, resetControlsTimer]);
+
+  useEffect(() => {
+    if (!product?.media) return;
+    const neighbors = [index - 1, index + 1].filter((i) => i >= 0 && i < product.media.length);
+    neighbors.forEach((i) => {
+      const src = product.media[i];
+      if (!src) return;
+      if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(src)) {
+        const video = document.createElement('video');
+        video.src = src;
+        video.preload = 'auto';
+      } else {
+        const img = new Image();
+        img.src = src;
+      }
+    });
+  }, [index, product]);
+
+  if (!isOpen || !product) return null;
+
+  const goNext = () => setIndex((i) => Math.min(i + 1, product.media.length - 1));
+  const goPrev = () => setIndex((i) => Math.max(i - 1, 0));
+
+  const handleTouchStart = (event) => {
+    setIsDragging(true);
+    startX.current = event.touches[0].clientX;
+    deltaX.current = 0;
+  };
+
+  const handleTouchMove = (event) => {
+    if (!isDragging) return;
+    deltaX.current = event.touches[0].clientX - startX.current;
+    const containerWidth = containerRef.current?.clientWidth || 1;
+    const offsetPercent = deltaX.current / containerWidth;
+
+    const hasNext = index < product.media.length - 1;
+    const hasPrev = index > 0;
+
+    if ((!hasNext && offsetPercent < 0) || (!hasPrev && offsetPercent > 0)) {
+      const resistance = 0.15;
+      const resistedOffset = Math.sign(offsetPercent) * (Math.abs(offsetPercent) ** 3) * resistance;
+      setDragOffset(resistedOffset);
+    } else {
+      setDragOffset(offsetPercent * 0.85);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    if (Math.abs(dragOffset) > dragThreshold) {
+      if (dragOffset < 0) goNext();
+      else goPrev();
+    }
+
+    setDragOffset(0);
+    deltaX.current = 0;
+  };
+
+  return (
+    <div className="fixed inset-0 z-[90] bg-black/95 flex items-center justify-center" onClick={onClose}>
+      <div
+        ref={containerRef}
+        onClick={(event) => event.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+        className="w-full h-full relative flex items-center justify-center"
+      >
+        <div className="fixed top-0 left-0 right-0 h-24 z-50 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent" />
+          <button
+            onClick={(event) => {
+              event.stopPropagation();
+              onClose?.();
+            }}
+            className="absolute top-4 right-4 glass-dark hover:bg-white/10 text-white/90 hover:text-white w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-95 backdrop-blur-lg border border-white/10 pointer-events-auto"
+            aria-label="Fermer"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+              <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
+
+        {index > 0 && (
+          <button
+            onClick={() => goPrev()}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-40 bg-black/40 hover:bg-black/60 backdrop-blur text-white w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95"
+          >
+            ◀
+          </button>
+        )}
+        {index < product.media.length - 1 && (
+          <button
+            onClick={() => goNext()}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-40 bg-black/40 hover:bg-black/60 backdrop-blur text-white w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95"
+          >
+            ▶
+          </button>
+        )}
+
+        <div className="w-full overflow-hidden rounded-2xl">
+          {product.media.map((mediaSrc, idx) => (
+            <div
+              key={`${mediaSrc}-${idx}`}
+              style={{
+                transform: `translateX(${100 * (idx - index) + (dragOffset * 100)}%)`,
+                transition: isDragging ? 'none' : 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
+                opacity: Math.abs(idx - index) <= 1 ? 1 : 0,
+                scale: isDragging ? '0.98' : '1',
+                filter: isDragging ? 'brightness(0.9)' : 'brightness(1)',
+              }}
+              className="absolute inset-0 w-full h-full flex items-center justify-center touch-none select-none"
+            >
+              {/\.(mp4|webm|ogg)(\?.*)?$/i.test(mediaSrc) ? (
+                <video
+                  src={mediaSrc}
+                  className="w-full max-h-[80vh] object-contain video-smooth"
+                  autoPlay
+                  muted
+                  defaultMuted
+                  controls
+                  playsInline
+                  preload={getPreferredPreload()}
+                  fetchpriority={index === idx ? 'high' : 'low'}
+                  onLoadedData={(event) => {
+                    try {
+                      event.target.muted = true;
+                      event.target.defaultMuted = true;
+                      event.target.volume = 0;
+                      logMediaMetric(product.id || product.name || 'unknown', idx, 'viewer_loadeddata');
+                    } catch (error) {
+                      /* ignore */
+                    }
+                  }}
+                  onPlay={(event) => {
+                    try {
+                      event.target.muted = true;
+                      event.target.volume = 0;
+                    } catch (error) {
+                      /* ignore */
+                    }
+                  }}
+                />
+              ) : (
+                <img src={mediaSrc} loading="lazy" className="w-full max-h-[80vh] object-contain" alt="media" />
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div
+          className={`absolute bottom-0 left-0 right-0 z-40 transition-opacity duration-300 ${
+            isControlsVisible ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent pointer-events-none" />
+          <div className="relative p-4 flex flex-col items-center">
+            <div className="flex items-center gap-2 mb-2">
+              {product.media.map((_, idx) => (
+                <button
+                  key={`${product.id}-${idx}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setIndex(idx);
+                  }}
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${
+                    idx === index ? 'bg-white scale-150' : 'bg-white/40 hover:bg-white/60'
+                  }`}
+                  title={`Média ${idx + 1}`}
+                />
+              ))}
+            </div>
+            <div className="text-white/60 text-xs font-medium">
+              {index + 1} / {product.media.length}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const FullscreenViewer = registerTangerineComponent(
+  'FullscreenViewer',
+  FullscreenViewerComponent,
+);
+
+export default FullscreenViewer;
+
+=== src/app/components/LoadingScreen.jsx ===
+import { useEffect, useMemo, useState } from 'react';
+import { registerTangerineComponent } from '../../lib/registry.js';
+import { LOGO_URL, trackEvent } from '../utils/analytics.js';
+
+const LOADING_MESSAGES = [
+  'Cleaning Resin',
+  'Loading Terpenes',
+  'Curing the Product',
+];
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+const LoadingScreenComponent = ({ onComplete }) => {
+  const [progress, setProgress] = useState(8);
+  const [messageIndex, setMessageIndex] = useState(0);
+
+  useEffect(() => {
+    trackEvent('page_load', { page: 'loading' });
+  }, []);
+
+  useEffect(() => {
+    let totalDelay = 0;
+    const steps = [
+      { value: 24, delay: 260 },
+      { value: 46, delay: 360 },
+      { value: 68, delay: 420 },
+      { value: 88, delay: 360 },
+      { value: 100, delay: 420 },
+    ];
+
+    const timers = steps.map((step) => {
+      totalDelay += step.delay;
+      return setTimeout(() => setProgress(step.value), totalDelay);
+    });
+
+    const completionTimer = setTimeout(() => {
+      if (typeof onComplete === 'function') {
+        onComplete();
+      }
+    }, totalDelay + 320);
+
+    return () => {
+      timers.forEach(clearTimeout);
+      clearTimeout(completionTimer);
+    };
+  }, [onComplete]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
+    }, 900);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const clampedProgress = useMemo(() => clamp(Math.round(progress), 0, 100), [progress]);
+  const progressStyle = useMemo(
+    () => ({ transform: `scaleX(${Math.max(clampedProgress, 4) / 100})` }),
+    [clampedProgress],
+  );
+  const subtext = useMemo(
+    () => `Chargement des résines · ${clampedProgress}%`,
+    [clampedProgress],
+  );
+
+  return (
+    <div className="fixed inset-0 z-50">
+      <div className="loading-overlay">
+        <div className="loading-aurora">
+          <div className="loading-orb orb-1" />
+          <div className="loading-orb orb-2" />
+          <div className="loading-orb orb-3" />
+        </div>
+        <div className="loading-noise" />
+
+        <div className="loading-core">
+          <div className="loading-logo-wrap">
+            <div className="loading-ring" />
+            <div className="loading-ring" />
+            <img
+              src={LOGO_URL}
+              alt="Tangerine"
+              className="loading-logo"
+              onError={(event) => {
+                event.target.src = 'https://s10.aconvert.com/convert/p3r68-cdx67/avr8y-z3sxq.jpg';
+              }}
+            />
+            <div className="loading-shine" />
+          </div>
+
+          <span className="loading-tagline">ONLY PREMIUM QUALITY</span>
+
+          <div className="loading-progress">
+            <div className="loading-progress-bar" style={progressStyle} />
+          </div>
+
+          <div className="loading-message">{LOADING_MESSAGES[messageIndex]}</div>
+          <div className="loading-subtext">{subtext}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const LoadingScreen = registerTangerineComponent(
+  'LoadingScreen',
+  LoadingScreenComponent,
+);
+
+export default LoadingScreen;
+
+=== src/app/components/Notification.jsx ===
+import { registerTangerineComponent } from '../../lib/registry.js';
+
+const ICONS = {
+  success: '✅',
+  error: '❌',
+  info: 'ℹ️',
+};
+
+const NotificationComponent = ({ message, isVisible, type = 'success' }) => (
+  <div
+    className={`fixed bottom-28 left-1/2 -translate-x-1/2 glass-dark px-6 py-4 rounded-2xl shadow-2xl transition-all duration-300 z-50 flex items-center gap-3 ${
+      isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 pointer-events-none'
+    }`}
+  >
+    <span className="text-2xl">{ICONS[type] || ICONS.info}</span>
+    <span className="text-white font-semibold text-sm">{message}</span>
+  </div>
+);
+
+export const Notification = registerTangerineComponent('Notification', NotificationComponent);
+
+export default Notification;
+
+=== src/app/components/ParticlesBackground.jsx ===
+import { memo, useEffect, useRef } from 'react';
+import { registerTangerineComponent } from '../../lib/registry.js';
+
+const ParticlesBackgroundComponent = memo(() => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d', { alpha: true });
+    let animationFrameId;
+    let particles = [];
+
+    const initParticles = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      particles = [];
+
+      const particleCount = Math.min(25, Math.floor((canvas.width * canvas.height) / 20000));
+      for (let index = 0; index < particleCount; index += 1) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 1.5 + 0.5,
+          dx: (Math.random() - 0.5) * 0.4,
+          dy: (Math.random() - 0.5) * 0.4,
+          opacity: Math.random() * 0.4 + 0.2,
+          color: ['249, 115, 22', '236, 72, 153', '59, 130, 246'][Math.floor(Math.random() * 3)],
+        });
+      }
+    };
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach((particle) => {
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${particle.color}, ${particle.opacity})`;
+        ctx.fill();
+
+        particle.x += particle.dx;
+        particle.y += particle.dy;
+
+        if (particle.x < 0 || particle.x > canvas.width) particle.dx *= -1;
+        if (particle.y < 0 || particle.y > canvas.height) particle.dy *= -1;
+      });
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    initParticles();
+    animate();
+
+    const handleResize = () => initParticles();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full pointer-events-none z-0 opacity-50" />;
+});
+
+export const ParticlesBackground = registerTangerineComponent(
+  'ParticlesBackground',
+  ParticlesBackgroundComponent,
+);
+
+export default ParticlesBackground;
+
+=== src/app/components/PaymentMethodSelector.jsx ===
+import { registerTangerineComponent } from '../../lib/registry.js';
+
+const PAYMENT_OPTIONS = [
+  { key: 'cash', label: 'Espèces', icon: '💵', gradient: 'from-green-500 to-emerald-500' },
+  { key: 'crypto', label: 'Crypto', icon: '🪙', gradient: 'from-purple-500 to-blue-500' },
+];
+
+const CRYPTO_METHODS = [
+  { label: 'Solana', icon: '◎', gradient: 'from-purple-500 to-blue-500' },
+  { label: 'Bitcoin', icon: '₿', gradient: 'from-orange-500 to-amber-500' },
+  { label: 'USDT', icon: '₮', gradient: 'from-emerald-500 to-green-500' },
+  { label: 'Ethereum', icon: 'Ξ', gradient: 'from-blue-500 to-cyan-500' },
+];
+
+const PaymentMethodSelectorComponent = ({ selectedMethod, onMethodChange }) => (
+  <div className="glass rounded-2xl p-4 space-y-3">
+    <div className="flex items-center gap-2 mb-2">
+      <span className="text-xl">💳</span>
+      <h3 className="text-white font-bold">Mode de paiement</h3>
+    </div>
+
+    <div className="grid grid-cols-2 gap-3">
+      {PAYMENT_OPTIONS.map(({ key, label, icon, gradient }) => {
+        const isSelected = selectedMethod === key;
+        return (
+          <button
+            key={key}
+            onClick={() => onMethodChange(key)}
+            className={`${
+              isSelected
+                ? `bg-gradient-to-r ${gradient} scale-105 glow`
+                : 'glass hover:bg-white/10'
+            } text-white font-semibold py-4 px-3 rounded-xl transition-all text-sm active:scale-95`}
+          >
+            <div className="text-2xl mb-1">{icon}</div>
+            <div>{label}</div>
+          </button>
+        );
+      })}
+    </div>
+
+    {selectedMethod === 'crypto' && (
+      <div className="grid grid-cols-2 gap-2 mt-4">
+        {CRYPTO_METHODS.map(({ label, icon, gradient }) => (
+          <div key={label} className="glass-dark rounded-lg p-3 flex items-center gap-3">
+            <div className={`w-9 h-9 bg-gradient-to-br ${gradient} rounded-lg flex items-center justify-center text-base`}>
+              {icon}
+            </div>
+            <span className="text-white/80 text-sm font-semibold">{label}</span>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+export const PaymentMethodSelector = registerTangerineComponent(
+  'PaymentMethodSelector',
+  PaymentMethodSelectorComponent,
+);
+
+export default PaymentMethodSelector;
+
+=== src/app/components/ProductCard.jsx ===
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { registerTangerineComponent } from '../../lib/registry.js';
+import {
+  PRICES,
+  QUANTITY_OPTIONS,
+} from '../constants/index.js';
+import {
+  logMediaMetric,
+  trackEvent,
+} from '../utils/analytics.js';
+import { WishlistButton } from './WishlistButton.jsx';
+
+const ProductCardComponent = memo(({
+  product,
+  onAddToCart,
+  onAnimateAdd,
+  onViewDetails,
+  isInWishlist,
+  onToggleWishlist,
+  isInitiallyVisible = false,
+  isPriority = false,
+}) => {
+  const [videoState, setVideoState] = useState('thumbnail');
+  const [isVisible, setIsVisible] = useState(isInitiallyVisible);
+  const videoRef = useRef(null);
+  const cardRef = useRef(null);
+  const observerRef = useRef(null);
+  const productKey = useMemo(
+    () => product.id || product.name || 'unknown',
+    [product.id, product.name],
+  );
+  const isAccessory = product.category === 'accessoires';
+  const imageLoading = isPriority ? 'eager' : 'lazy';
+  const imageFetchPriority = isPriority ? 'high' : 'auto';
+  const videoPreload = isPriority ? 'auto' : 'metadata';
+  const videoFetchPriority = isPriority ? 'high' : 'low';
+
+  const forcePlay = useCallback((reason, retryCount = 0) => {
+    const video = videoRef.current;
+    if (!video || videoState === 'error') {
+      return;
+    }
+
+    video.muted = true;
+    video.playsInline = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+
+    video
+      .play()
+      .then(() => {
+        logMediaMetric(productKey, 0, `play_success_${reason}`);
+      })
+      .catch((error) => {
+        logMediaMetric(productKey, 0, `play_error_${reason}`);
+        if (retryCount < 5 && (isVisible || isInitiallyVisible)) {
+          const delay = 200 * (retryCount + 1);
+          setTimeout(() => forcePlay(reason, retryCount + 1), delay);
+        }
+      });
+  }, [isInitiallyVisible, isVisible, productKey, videoState]);
+
+  useEffect(() => {
+    // Préparation immédiate de la vidéo comme dans la version legacy
+    if (!videoRef.current || !product.media?.[0] || videoState !== 'thumbnail') {
+      return () => {};
+    }
+
+    setVideoState('loading');
+
+    try {
+      videoRef.current.src = product.media[0];
+      logMediaMetric(productKey, 0, 'card_src_assigned');
+    } catch (error) {
+      logMediaMetric(productKey, 0, `direct_src_error_${error?.message || 'unknown'}`);
+      setVideoState('error');
+    }
+
+    trackEvent('product_view', {
+      product: product.name,
+      category: product.category,
+    });
+
+    return () => {};
+  }, [product.category, product.media, product.name, productKey, videoState]);
+
+  useEffect(() => {
+    try {
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          const [entry] = entries;
+          if (!entry || !videoRef.current) return;
+
+          setIsVisible(entry.isIntersecting);
+          logMediaMetric(productKey, 0, entry.isIntersecting ? 'observer_enter' : 'observer_exit');
+
+          if (entry.isIntersecting) {
+            // Dès qu'une carte devient visible, on force la lecture comme dans le legacy
+            forcePlay('observer');
+          } else if (videoRef.current) {
+            try {
+              videoRef.current.pause();
+              videoRef.current.currentTime = 0;
+            } catch (error) {
+              // ignore pause errors
+            }
+          }
+        },
+        {
+          threshold: [0.5],
+          rootMargin: '50px',
+        },
+      );
+    } catch (error) {
+      console.error('IntersectionObserver setup failed:', error);
+    }
+
+    if (cardRef.current && observerRef.current) {
+      observerRef.current.observe(cardRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) observerRef.current.disconnect();
+    };
+  }, [forcePlay, product.category, product.media, product.name, productKey, videoState]);
+
+  useEffect(() => {
+    if (videoState === 'loaded' && (isInitiallyVisible || isVisible)) {
+      forcePlay(isInitiallyVisible ? 'initial_loaded' : 'visible_loaded');
+    }
+  }, [forcePlay, isInitiallyVisible, isVisible, videoState]);
+
+  useEffect(() => {
+    if (isVisible) {
+      forcePlay('visibility_change');
+    }
+  }, [forcePlay, isVisible]);
+
+  const handleQuickAdd = useCallback((qty, event) => {
+    event.stopPropagation();
+
+    if (product.category === 'accessoires') {
+      onViewDetails(product);
+      trackEvent('accessory_open_details', { product: product.name });
+      return;
+    }
+
+    const button = event.currentTarget;
+    if (button) {
+      button.classList.add('tap-state');
+      setTimeout(() => button.classList.remove('tap-state'), 260);
+    }
+
+    const price = PRICES[product.category] * qty;
+    onAddToCart(product, qty, price);
+    if (onAnimateAdd && button) {
+      onAnimateAdd(product, qty, button);
+    }
+    trackEvent('quick_add_to_cart', {
+      product: product.name,
+      quantity: qty,
+      price,
+    });
+  }, [onAddToCart, onAnimateAdd, onViewDetails, product]);
+
+  const handleAccessoryCTA = useCallback((event) => {
+    event.stopPropagation();
+
+    const button = event.currentTarget;
+    if (button) {
+      button.classList.add('tap-state');
+      setTimeout(() => button.classList.remove('tap-state'), 260);
+    }
+
+    onViewDetails(product);
+    trackEvent('accessory_open_details', { product: product.name });
+  }, [onViewDetails, product]);
+
+  const handleVideoLoad = useCallback(() => {
+    setVideoState('loaded');
+    logMediaMetric(productKey, 0, 'card_loadeddata');
+  }, [productKey]);
+
+  const handleVideoError = useCallback(() => {
+    setVideoState('error');
+    logMediaMetric(productKey, 0, 'card_error');
+  }, [productKey]);
+
+  return (
+    <div
+      ref={cardRef}
+      className={`snap-center flex-shrink-0 w-80 glass rounded-3xl p-5 card-hover relative overflow-hidden group ${
+        videoState === 'loaded' && (isVisible || isInitiallyVisible) ? 'card-playing' : ''
+      }`}
+    >
+      <div className="card-halo" aria-hidden="true" />
+      {onToggleWishlist && (
+        <WishlistButton
+          product={product}
+          isInWishlist={isInWishlist}
+          onToggle={onToggleWishlist}
+        />
+      )}
+      <div
+        onClick={() => {
+          onViewDetails(product);
+          trackEvent('product_detail_view', { product: product.name });
+        }}
+        className="relative h-60 rounded-2xl overflow-hidden bg-black/30 mb-4 cursor-pointer"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => event.key === 'Enter' && onViewDetails(product)}
+      >
+        {product.badge && (
+          <div className="absolute top-3 left-3 z-20">
+            <span className="product-badge">{product.badge}</span>
+          </div>
+        )}
+        <img
+          src={product.thumbnail}
+          loading={imageLoading}
+          fetchpriority={imageFetchPriority}
+          alt={product.name}
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-300 ${
+            videoState === 'loaded' ? 'opacity-0' : 'opacity-100'
+          }`}
+        />
+
+        {product.media?.[0] && (
+          <video
+            ref={videoRef}
+            data-product-id={product.id || product.name}
+            src={product.media[0]}
+            className="absolute inset-0 w-full h-full object-cover video-smooth"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload={videoPreload}
+            poster={(product.posters && product.posters[0]) || product.thumbnail}
+            fetchpriority={videoFetchPriority}
+            onLoadedData={handleVideoLoad}
+            onError={handleVideoError}
+          />
+        )}
+
+        {videoState === 'loading' && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10">
+            <div className="w-10 h-10 border-3 border-orange-500 border-t-transparent rounded-full spinner" />
+          </div>
+        )}
+
+        {videoState === 'error' && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-red-500/10 to-transparent z-10">
+            <span className="text-4xl mb-2">⚠️</span>
+            <p className="text-white/60 text-xs">Vidéo indisponible</p>
+          </div>
+        )}
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+        <div className="absolute bottom-3 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="text-white text-sm font-semibold bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full">
+            👁️ Détails
+          </span>
+        </div>
+      </div>
+      <div className="mb-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-3xl">{product.emoji}</span>
+          <h3 className="text-white font-bold text-lg flex-1">{product.name}</h3>
+          <span
+            className={`font-bold text-xs px-2 py-1 rounded-lg ${
+              isAccessory
+                ? 'bg-white/10 text-white/80 border border-white/10'
+                : 'text-emerald-300 bg-emerald-500/20'
+            }`}
+          >
+            {isAccessory ? 'Prix à définir' : `${PRICES[product.category]}€/g`}
+          </span>
+        </div>
+        <p className="text-white/60 text-sm line-clamp-2">{product.desc}</p>
+      </div>
+
+      <div className="flex gap-3">
+        {isAccessory ? (
+          <button
+            onClick={handleAccessoryCTA}
+            className="w-full glass-cta font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2"
+          >
+            <span>🔍</span>
+            <span>Voir détails</span>
+          </button>
+        ) : (
+          QUANTITY_OPTIONS.map((qty) => (
+            <button
+              key={qty}
+              onClick={(event) => handleQuickAdd(qty, event)}
+              className="flex-1 quantity-button glass-cta font-semibold px-6 py-4 rounded-full text-base leading-tight"
+            >
+              {qty}g
+              <br />
+              <span className="block text-xs opacity-90 mt-1">{PRICES[product.category] * qty}€</span>
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+});
+
+export const ProductCard = registerTangerineComponent('ProductCard', ProductCardComponent);
+
+export default ProductCard;
+
+=== src/app/components/ProductDetailModal.jsx ===
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { registerTangerineComponent } from '../../lib/registry.js';
+import {
+  MIN_QUANTITY,
+  PRICES,
+  QUANTITY_OPTIONS,
+} from '../constants/index.js';
+import {
+  logMediaMetric,
+  trackEvent,
+} from '../utils/analytics.js';
+import {
+  getPreferredPreload,
+  getVideoManager,
+} from '../utils/videoManager.js';
+
+const videoManager = getVideoManager();
+
+const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer }) => {
+  const [selectedQuantity, setSelectedQuantity] = useState(MIN_QUANTITY);
+  const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
+  const [mediaLoaded, setMediaLoaded] = useState(false);
+  const videoRef = useRef(null);
+  const isAccessory = product?.category === 'accessoires';
+
+  useEffect(() => {
+    if (!product) return undefined;
+
+    trackEvent('product_detail_opened', { product: product.name });
+    setSelectedMediaIndex(0);
+    setMediaLoaded(false);
+
+    const src = product.media?.[0];
+    if (src && /\.(mp4|webm|ogg)(\?.*)?$/i.test(src) && videoRef.current) {
+      videoManager
+        .prepareVideo(videoRef.current, src)
+        .then(() => {
+          logMediaMetric(product.id || product.name || 'unknown', 0, 'detail_load_success');
+        })
+        .catch((error) => {
+          logMediaMetric(
+            product.id || product.name || 'unknown',
+            0,
+            'detail_load_error',
+            { error: error.message },
+          );
+        });
+    }
+
+    return () => {
+      if (videoRef.current) {
+        try {
+          videoRef.current.pause();
+          videoRef.current.currentTime = 0;
+          videoRef.current.src = '';
+          videoRef.current.load();
+        } catch (error) {
+          /* ignore */
+        }
+      }
+    };
+  }, [product]);
+
+  useEffect(() => {
+    if (!product) return;
+    const src = product.media?.[selectedMediaIndex];
+    setMediaLoaded(false);
+    if (!src) return;
+
+    if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(src)) {
+      if (videoRef.current) {
+        videoManager
+          .prepareVideo(videoRef.current, src)
+          .then(() => {
+            logMediaMetric(
+              product.id || product.name || 'unknown',
+              selectedMediaIndex,
+              'detail_swap_success',
+            );
+            setMediaLoaded(true);
+          })
+          .catch(() => {
+            // leave spinner visible
+          });
+      }
+    } else {
+      setMediaLoaded(true);
+    }
+  }, [product, selectedMediaIndex]);
+
+  const handleAddToCart = useCallback(() => {
+    if (!product) return;
+    const price = PRICES[product.category] * selectedQuantity;
+    onAddToCart(product, selectedQuantity, price);
+    trackEvent('add_to_cart_from_detail', {
+      product: product.name,
+      quantity: selectedQuantity,
+      price,
+    });
+    onClose();
+  }, [onAddToCart, onClose, product, selectedQuantity]);
+
+  const handleQuantityInput = (event) => {
+    const value = parseInt(event.target.value, 10);
+    setSelectedQuantity(Math.max(MIN_QUANTITY, Number.isNaN(value) ? MIN_QUANTITY : value));
+  };
+
+  const price = useMemo(() => (
+    product ? PRICES[product.category] * selectedQuantity : 0
+  ), [product, selectedQuantity]);
+
+  if (!product) return null;
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in-up"
+      onClick={onClose}
+    >
+      <div
+        className="glass-dark rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="relative">
+          <div
+            onClick={() => openViewer && openViewer(product, selectedMediaIndex)}
+            className="cursor-zoom-in relative w-full h-72 rounded-t-3xl overflow-hidden"
+            role="button"
+            tabIndex={0}
+          >
+            {product.media?.[selectedMediaIndex] && /\.(mp4|webm|ogg)(\?.*)?$/i.test(product.media[selectedMediaIndex]) ? (
+              <>
+                {!mediaLoaded && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-10">
+                    <div className="w-14 h-14 border-4 border-orange-500 border-t-transparent rounded-full spinner" />
+                  </div>
+                )}
+                <video
+                  key={`main-${product.id}-${selectedMediaIndex}`}
+                  ref={videoRef}
+                  className="relative w-full h-72 object-cover video-smooth"
+                  loop
+                  muted
+                  playsInline
+                  autoPlay
+                  poster={(product.posters && product.posters[selectedMediaIndex]) || product.thumbnail}
+                  fetchpriority="high"
+                  preload="auto"
+                  onLoadedMetadata={() => {
+                    if (!videoRef.current) return;
+                    videoRef.current.muted = true;
+                    videoRef.current.defaultMuted = true;
+                    videoRef.current.playsInline = true;
+                    videoRef.current.setAttribute('playsinline', '');
+                    videoRef.current.setAttribute('muted', '');
+                    videoRef.current
+                      .play()
+                      .then(() => {
+                        setMediaLoaded(true);
+                        logMediaMetric(
+                          product.id || product.name || 'unknown',
+                          selectedMediaIndex,
+                          'detail_autoplay_success',
+                        );
+                      })
+                      .catch((error) => {
+                        logMediaMetric(
+                          product.id || product.name || 'unknown',
+                          selectedMediaIndex,
+                          'detail_autoplay_failed',
+                          { error: error.message },
+                        );
+                        setTimeout(() => {
+                          videoRef.current?.play().catch(() => {});
+                        }, 500);
+                      });
+                  }}
+                />
+              </>
+            ) : (
+              <img
+                src={product.thumbnail}
+                alt={product.name}
+                loading="lazy"
+                className="w-full h-72 object-cover"
+              />
+            )}
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
+            <button
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                if (videoRef.current) {
+                  try {
+                    videoRef.current.pause();
+                    videoRef.current.currentTime = 0;
+                  } catch (error) {
+                    /* ignore */
+                  }
+                }
+                onClose();
+              }}
+              className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white hover:bg-black/80 w-12 h-12 rounded-full transition-all flex items-center justify-center text-2xl z-20 active:scale-90"
+            >
+              ✕
+            </button>
+
+            <div className="absolute bottom-4 left-6">
+              <div className="flex items-center gap-3">
+                <span className="text-5xl">{product.emoji}</span>
+                <h2 className="text-3xl font-black text-white">{product.name}</h2>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="p-4 flex gap-3 overflow-x-auto hide-scrollbar"
+            role="listbox"
+            aria-label="Sélecteur de médias"
+          >
+            {product.media?.map((mediaSrc, idx) => (
+              <button
+                key={`${mediaSrc}-${idx}`}
+                onClick={() => {
+                  setSelectedMediaIndex(idx);
+                  setMediaLoaded(false);
+                }}
+                className={`rounded-xl overflow-hidden border-2 ${
+                  selectedMediaIndex === idx
+                    ? 'border-emerald-400 ring-2 ring-emerald-300/50'
+                    : 'border-white/10 hover:border-white/30'
+                } p-0 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-300/50`}
+                style={{ minWidth: 96, minHeight: 64 }}
+                title={`Ouvrir média ${idx + 1}`}
+                role="option"
+                aria-selected={selectedMediaIndex === idx}
+                tabIndex={0}
+              >
+                {/\.(mp4|webm|ogg)(\?.*)?$/i.test(mediaSrc) ? (
+                  <video
+                    src={mediaSrc}
+                    className="w-24 h-16 object-cover video-smooth"
+                    muted
+                    defaultMuted
+                    preload={getPreferredPreload()}
+                    playsInline
+                    fetchpriority="high"
+                    poster={(product.posters && product.posters[idx]) || product.thumbnail}
+                    onPlay={(event) => {
+                      try {
+                        event.target.muted = true;
+                        event.target.defaultMuted = true;
+                        event.target.volume = 0;
+                      } catch (error) {
+                        /* ignore */
+                      }
+                    }}
+                    onLoadedMetadata={(event) => {
+                      try {
+                        const video = event.target;
+                        video.muted = true;
+                        video.defaultMuted = true;
+                        video.volume = 0;
+                        const width = video.videoWidth || 0;
+                        const height = video.videoHeight || 0;
+                        if (height > width) video.classList.add('is-portrait');
+                        else video.classList.remove('is-portrait');
+                      } catch (error) {
+                        /* ignore */
+                      }
+                    }}
+                  />
+                ) : (
+                  <img src={mediaSrc} className="w-24 h-16 object-cover" loading="lazy" alt="aperçu média" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div>
+            <h3 className="text-white font-bold text-lg mb-2">📝 Description</h3>
+            <p className="text-white/80 leading-relaxed text-sm">{product.desc}</p>
+          </div>
+
+          {isAccessory ? (
+            <div className="space-y-4">
+              <div className="glass p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                  <p className="text-white/60 text-sm mb-1">Prix indicatif</p>
+                  <p className="text-white/80 font-semibold text-lg">À définir</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="glass p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                  <p className="text-white/60 text-sm mb-1">Prix unitaire</p>
+                  <p className="gradient-text font-black text-2xl">{PRICES[product.category]}€/g</p>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-white font-bold text-lg mb-3">⚖️ Quantité (min. {MIN_QUANTITY}g)</h3>
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  {QUANTITY_OPTIONS.map((qty) => (
+                    <button
+                      key={qty}
+                      onClick={() => setSelectedQuantity(qty)}
+                      className={`glass text-white font-bold py-3 rounded-xl transition-all active:scale-95 ${
+                        selectedQuantity === qty
+                          ? 'cta-primary scale-105 shadow-lg'
+                          : 'hover:bg-white/10'
+                      }`}
+                    >
+                      {qty}g
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex gap-3">
+                  <input
+                    type="number"
+                    min={MIN_QUANTITY}
+                    value={selectedQuantity}
+                    onChange={handleQuantityInput}
+                    className="flex-1 glass text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-emerald-400 text-center font-bold"
+                    placeholder={`Min. ${MIN_QUANTITY}g`}
+                  />
+                  <div className="glass px-6 py-3 rounded-xl flex items-center">
+                    <span className="text-white font-bold text-xl">{price}€</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={handleAddToCart}
+                className="w-full glass-cta font-semibold py-4 rounded-2xl flex items-center justify-center gap-2"
+              >
+                <span>🛒</span>
+                <span>Ajouter ({price}€)</span>
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const ProductDetailModal = registerTangerineComponent(
+  'ProductDetailModal',
+  ProductDetailModalComponent,
+);
+
+export default ProductDetailModal;
+
+=== src/app/components/PromoCodeInput.jsx ===
+import { useState } from 'react';
+import { registerTangerineComponent } from '../../lib/registry.js';
+import { PROMO_CODES } from '../constants/index.js';
+import { trackEvent } from '../utils/analytics.js';
+
+const PromoCodeInputComponent = ({ appliedPromo, onApplyPromo, onRemovePromo }) => {
+  const [promoInput, setPromoInput] = useState('');
+  const [error, setError] = useState('');
+
+  const handleApply = () => {
+    const upperCode = promoInput.toUpperCase().trim();
+    if (PROMO_CODES[upperCode]) {
+      onApplyPromo(upperCode);
+      setError('');
+      trackEvent('promo_code_applied', { code: upperCode });
+    } else {
+      setError('Code invalide');
+      setTimeout(() => setError(''), 2000);
+    }
+  };
+
+  return (
+    <div className="glass rounded-2xl p-4 space-y-3 animate-slide-up">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-xl">🎟️</span>
+        <h3 className="text-white font-bold">Code promo</h3>
+      </div>
+
+      {appliedPromo ? (
+        <div className="glass-dark rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+              <span className="text-xl">✓</span>
+            </div>
+            <div>
+              <p className="text-white font-bold text-sm">{appliedPromo}</p>
+              <p className="text-green-400 text-xs font-semibold">{PROMO_CODES[appliedPromo].label} appliqué</p>
+            </div>
+          </div>
+          <button
+            onClick={onRemovePromo}
+            className="bg-red-500/20 hover:bg-red-500/40 text-red-400 px-3 py-2 rounded-lg transition-all active:scale-90 text-sm font-semibold"
+          >
+            ✕
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <input
+            type="text"
+            value={promoInput}
+            onChange={(event) => setPromoInput(event.target.value)}
+            onKeyPress={(event) => event.key === 'Enter' && handleApply()}
+            placeholder="Entrez votre code"
+            className="w-full glass text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 placeholder-white/40 uppercase"
+          />
+          {error && (
+            <p className="text-red-400 text-xs font-semibold animate-fade-in-up">{error}</p>
+          )}
+          <button
+            onClick={handleApply}
+            className="w-full cta-primary font-bold py-3 rounded-xl transition-all active:scale-95"
+          >
+            Appliquer
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const PromoCodeInput = registerTangerineComponent('PromoCodeInput', PromoCodeInputComponent);
+
+export default PromoCodeInput;
+
+=== src/app/components/SearchBar.jsx ===
+import { useEffect, useRef, useState } from 'react';
+import { registerTangerineComponent } from '../../lib/registry.js';
+import { trackEvent } from '../utils/analytics.js';
+
+const SearchBarComponent = ({ onSearch, searchQuery, onQueryChange }) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef(null);
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+    onSearch(searchQuery);
+    trackEvent('search_performed', { query: searchQuery });
+  };
+
+  useEffect(() => {
+    const inputEl = inputRef.current;
+    if (!inputEl) return;
+
+    const handleFocus = () => setIsFocused(true);
+    const handleBlur = () => setIsFocused(false);
+
+    inputEl.addEventListener('focus', handleFocus);
+    inputEl.addEventListener('blur', handleBlur);
+
+    return () => {
+      inputEl.removeEventListener('focus', handleFocus);
+      inputEl.removeEventListener('blur', handleBlur);
+    };
+  }, []);
+
+  return (
+    <form onSubmit={handleSearch} className="relative w-full max-w-md mx-auto mb-6">
+      <div
+        className={`glass rounded-2xl p-3 flex items-center gap-3 transition-all ${
+          isFocused ? 'ring-2 ring-emerald-400' : ''
+        }`}
+      >
+        <span className="text-2xl">🔍</span>
+        <input
+          ref={inputRef}
+          type="text"
+          value={searchQuery}
+          onChange={(event) => onQueryChange(event.target.value)}
+          placeholder="Rechercher un produit..."
+          className="flex-1 bg-transparent text-white placeholder-white/40 outline-none text-sm"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => {
+              onQueryChange('');
+              onSearch('');
+            }}
+            className="text-white/60 hover:text-white transition-all"
+          >
+            ✕
+          </button>
+        )}
+        <button
+          type="submit"
+          className="cta-primary text-white px-4 py-2 rounded-xl font-bold text-sm transition-all active:scale-95"
+        >
+          Rechercher
+        </button>
+      </div>
+    </form>
+  );
+};
+
+export const SearchBar = registerTangerineComponent('SearchBar', SearchBarComponent);
+
+export default SearchBar;
+
+=== src/app/components/ThemeToggle.jsx ===
+import { registerTangerineComponent } from '../../lib/registry.js';
+
+const ThemeToggleComponent = ({ theme, onToggle, cartOpen = false }) => (
+  <button
+    onClick={onToggle}
+    className={`theme-toggle text-white ${cartOpen ? 'cart-open' : ''}`}
+    title={theme === 'dark' ? 'Mode jour' : 'Mode nuit'}
+    aria-label={theme === 'dark' ? 'Passer au mode jour' : 'Passer au mode nuit'}
+  >
+    {theme === 'dark' ? (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="5" />
+        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+      </svg>
+    ) : (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+      </svg>
+    )}
+  </button>
+);
+
+export const ThemeToggle = registerTangerineComponent('ThemeToggle', ThemeToggleComponent);
+
+export default ThemeToggle;
+
+=== src/app/components/WishlistButton.jsx ===
+import { registerTangerineComponent } from '../../lib/registry.js';
+
+const WishlistButtonComponent = ({ product, isInWishlist, onToggle }) => (
+  <button
+    onClick={(event) => {
+      event.stopPropagation();
+      onToggle(product);
+    }}
+    className={`absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center transition-all z-20 ${
+      isInWishlist ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-black/50 hover:bg-black/70 text-white/80'
+    } backdrop-blur-sm active:scale-90`}
+    title={isInWishlist ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+  >
+    <span className="text-xl">{isInWishlist ? '❤️' : '🤍'}</span>
+  </button>
+);
+
+export const WishlistButton = registerTangerineComponent(
+  'WishlistButton',
+  WishlistButtonComponent,
+);
+
+export default WishlistButton;
