@@ -4,7 +4,7 @@ import compression from 'vite-plugin-compression';
 import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig(({ mode }) => ({
-  base: '/tangerine-v2/',
+  base: mode === 'production' ? '/tangerine-v2/' : '/',
   plugins: [
     react(),
     compression({

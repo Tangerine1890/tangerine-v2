@@ -10,32 +10,72 @@ import {
 
 const ensureWindow = () => (typeof window !== 'undefined' ? window : undefined);
 
+const buildCloudStorageAdapter = (cloudStorage) => {
+  const wrap = (method, ...args) => new Promise((resolve, reject) => {
+    try {
+      method.call(cloudStorage, ...args, (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(result);
+      });
+    } catch (runtimeError) {
+      reject(runtimeError);
+    }
+  });
+
+  return {
+    async get(key) {
+      const value = await wrap(cloudStorage.getItem, key);
+      return value != null ? { value } : null;
+    },
+    async set(key, value) {
+      const serialized = typeof value === 'string' ? value : JSON.stringify(value);
+      await wrap(cloudStorage.setItem, key, serialized);
+      return true;
+    },
+    async remove(key) {
+      await wrap(cloudStorage.removeItem, key);
+      return true;
+    },
+  };
+};
+
+const buildLocalStorageAdapter = (win) => ({
+  async get(key) {
+    const value = win.localStorage.getItem(key);
+    return value != null ? { value } : null;
+  },
+  async set(key, value) {
+    win.localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+    return true;
+  },
+  async remove(key) {
+    win.localStorage.removeItem(key);
+    return true;
+  },
+});
+
 const getStorageBackend = () => {
   const win = ensureWindow();
   if (!win) return null;
+
+  if (win.Telegram?.WebApp?.CloudStorage) {
+    return buildCloudStorageAdapter(win.Telegram.WebApp.CloudStorage);
+  }
 
   if (win.storage && typeof win.storage.get === 'function' && typeof win.storage.set === 'function') {
     return win.storage;
   }
 
   try {
-    return {
-      async get(key) {
-        const value = win.localStorage.getItem(key);
-        return value != null ? { value } : null;
-      },
-      async set(key, value) {
-        win.localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
-        return true;
-      },
-    };
+    return buildLocalStorageAdapter(win);
   } catch (error) {
     console.warn('No storage backend available', error);
     return null;
   }
 };
-
-const storage = getStorageBackend();
 
 const safeParse = (value, fallback) => {
   try {
@@ -45,11 +85,11 @@ const safeParse = (value, fallback) => {
   }
 };
 
-export const StorageManager = {
+const createStorageManager = (backend) => ({
   async saveCart(cart) {
-    if (!storage) return false;
+    if (!backend) return false;
     try {
-      await storage.set(CART_STORAGE_KEY, cart);
+      await backend.set(CART_STORAGE_KEY, cart);
       return true;
     } catch (error) {
       console.error('Storage error:', error);
@@ -58,9 +98,9 @@ export const StorageManager = {
   },
 
   async loadCart() {
-    if (!storage) return [];
+    if (!backend) return [];
     try {
-      const result = await storage.get(CART_STORAGE_KEY);
+      const result = await backend.get(CART_STORAGE_KEY);
       return safeParse(result?.value, []);
     } catch (error) {
       return [];
@@ -68,9 +108,9 @@ export const StorageManager = {
   },
 
   async saveDeliveryCity(city) {
-    if (!storage) return false;
+    if (!backend) return false;
     try {
-      await storage.set(DELIVERY_CITY_STORAGE_KEY, city);
+      await backend.set(DELIVERY_CITY_STORAGE_KEY, city);
       return true;
     } catch (error) {
       console.error('Storage error:', error);
@@ -79,9 +119,9 @@ export const StorageManager = {
   },
 
   async loadDeliveryCity() {
-    if (!storage) return 'rabat';
+    if (!backend) return 'rabat';
     try {
-      const result = await storage.get(DELIVERY_CITY_STORAGE_KEY);
+      const result = await backend.get(DELIVERY_CITY_STORAGE_KEY);
       return result?.value || 'rabat';
     } catch (error) {
       return 'rabat';
@@ -89,9 +129,9 @@ export const StorageManager = {
   },
 
   async savePaymentMethod(method) {
-    if (!storage) return false;
+    if (!backend) return false;
     try {
-      await storage.set(PAYMENT_METHOD_STORAGE_KEY, method);
+      await backend.set(PAYMENT_METHOD_STORAGE_KEY, method);
       return true;
     } catch (error) {
       console.error('Storage error:', error);
@@ -100,9 +140,9 @@ export const StorageManager = {
   },
 
   async loadPaymentMethod() {
-    if (!storage) return 'cash';
+    if (!backend) return 'cash';
     try {
-      const result = await storage.get(PAYMENT_METHOD_STORAGE_KEY);
+      const result = await backend.get(PAYMENT_METHOD_STORAGE_KEY);
       return result?.value || 'cash';
     } catch (error) {
       return 'cash';
@@ -110,9 +150,9 @@ export const StorageManager = {
   },
 
   async savePromoCode(code) {
-    if (!storage) return false;
+    if (!backend) return false;
     try {
-      await storage.set(PROMO_CODE_STORAGE_KEY, code);
+      await backend.set(PROMO_CODE_STORAGE_KEY, code);
       return true;
     } catch (error) {
       console.error('Storage error:', error);
@@ -121,9 +161,9 @@ export const StorageManager = {
   },
 
   async loadPromoCode() {
-    if (!storage) return '';
+    if (!backend) return '';
     try {
-      const result = await storage.get(PROMO_CODE_STORAGE_KEY);
+      const result = await backend.get(PROMO_CODE_STORAGE_KEY);
       return result?.value || '';
     } catch (error) {
       return '';
@@ -131,9 +171,9 @@ export const StorageManager = {
   },
 
   async saveWishlist(wishlist) {
-    if (!storage) return false;
+    if (!backend) return false;
     try {
-      await storage.set(WISHLIST_STORAGE_KEY, wishlist);
+      await backend.set(WISHLIST_STORAGE_KEY, wishlist);
       return true;
     } catch (error) {
       console.error('Storage error:', error);
@@ -142,9 +182,9 @@ export const StorageManager = {
   },
 
   async loadWishlist() {
-    if (!storage) return [];
+    if (!backend) return [];
     try {
-      const result = await storage.get(WISHLIST_STORAGE_KEY);
+      const result = await backend.get(WISHLIST_STORAGE_KEY);
       return safeParse(result?.value, []);
     } catch (error) {
       return [];
@@ -152,9 +192,9 @@ export const StorageManager = {
   },
 
   async saveOrderHistory(orders) {
-    if (!storage) return false;
+    if (!backend) return false;
     try {
-      await storage.set(ORDER_HISTORY_STORAGE_KEY, orders);
+      await backend.set(ORDER_HISTORY_STORAGE_KEY, orders);
       return true;
     } catch (error) {
       console.error('Storage error:', error);
@@ -163,9 +203,9 @@ export const StorageManager = {
   },
 
   async loadOrderHistory() {
-    if (!storage) return [];
+    if (!backend) return [];
     try {
-      const result = await storage.get(ORDER_HISTORY_STORAGE_KEY);
+      const result = await backend.get(ORDER_HISTORY_STORAGE_KEY);
       return safeParse(result?.value, []);
     } catch (error) {
       return [];
@@ -173,9 +213,9 @@ export const StorageManager = {
   },
 
   async saveTheme(theme) {
-    if (!storage) return false;
+    if (!backend) return false;
     try {
-      await storage.set(THEME_STORAGE_KEY, theme);
+      await backend.set(THEME_STORAGE_KEY, theme);
       return true;
     } catch (error) {
       console.error('Storage error:', error);
@@ -184,12 +224,21 @@ export const StorageManager = {
   },
 
   async loadTheme() {
-    if (!storage) return 'dark';
+    if (!backend) return 'dark';
     try {
-      const result = await storage.get(THEME_STORAGE_KEY);
+      const result = await backend.get(THEME_STORAGE_KEY);
       return result?.value || 'dark';
     } catch (error) {
       return 'dark';
     }
   },
+});
+
+const storageBackend = getStorageBackend();
+
+export const StorageManager = createStorageManager(storageBackend);
+
+export const createCloudStorageManager = (cloudStorage) => {
+  if (!cloudStorage) return StorageManager;
+  return createStorageManager(buildCloudStorageAdapter(cloudStorage));
 };

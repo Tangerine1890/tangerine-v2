@@ -7,6 +7,12 @@ import {
   useRef,
   useState,
 } from 'react';
+import {
+  miniApp as miniAppFeature,
+  themeParams as themeParamsFeature,
+  useSignal,
+  viewport as viewportFeature,
+} from '@tma.js/sdk-react';
 import { ensureTangerineNamespace } from './lib/registry.js';
 import {
   CATEGORIES,
@@ -19,7 +25,6 @@ import {
 } from './app/constants/index.js';
 import { StorageManager } from './app/utils/storage.js';
 import { getVideoManager } from './app/utils/videoManager.js';
-import { initTelegramApp } from './app/utils/telegram.js';
 import {
   LOGO_URL,
   disableUmamiForOwner,
@@ -64,47 +69,123 @@ const App = () => {
   const [viewerStartIndex, setViewerStartIndex] = useState(0);
   const [showWelcome, setShowWelcome] = useState(false);
   const [welcomeRendered, setWelcomeRendered] = useState(false);
-  const [telegram, setTelegram] = useState(null);
+  const miniApp = miniAppFeature;
+  const themeParams = useSignal(themeParamsFeature.state);
+  const viewport = useSignal(viewportFeature.state);
   const welcomeTimerRef = useRef(null);
   const welcomeUnmountRef = useRef(null);
   const categoryScrollRef = useRef(null);
   const cartButtonRef = useRef(null);
   const auroraRef = useRef(null);
   const videoManagerRef = useRef(getVideoManager());
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [homeScreenStatus, setHomeScreenStatus] = useState('unknown');
+  const [isAppActive, setIsAppActive] = useState(true);
 
   useEffect(() => {
     ensureTangerineNamespace();
-    const tgInstance = initTelegramApp();
-    if (tgInstance) {
-      setTelegram(tgInstance);
-    }
-    // Service Worker désactivé pour éviter que d’anciens bundles restent en cache
-    // registerServiceWorker();
     if (typeof window !== 'undefined') {
       window.videoManager = videoManagerRef.current;
     }
   }, []);
 
   useEffect(() => {
-    if (!telegram?.MainButton) return undefined;
+    if (!themeParams) return;
+    const root = document.documentElement;
+    const themeEntries = [
+      ['--tg-theme-bg-color', themeParams.backgroundColor],
+      ['--tg-theme-text-color', themeParams.textColor],
+      ['--tg-theme-hint-color', themeParams.hintColor],
+      ['--tg-theme-link-color', themeParams.linkColor],
+      ['--tg-theme-button-color', themeParams.buttonColor],
+      ['--tg-theme-button-text-color', themeParams.buttonTextColor],
+      ['--tg-theme-secondary-bg-color', themeParams.secondaryBackgroundColor],
+    ];
+    themeEntries.forEach(([key, value]) => {
+      if (value) {
+        root.style.setProperty(key, value);
+      }
+    });
+  }, [themeParams]);
 
-    const { MainButton, HapticFeedback } = telegram;
+  useEffect(() => {
+    if (!viewport) return;
+    const root = document.documentElement;
+    if (viewport.height) {
+      root.style.setProperty('--tg-viewport-height', `${viewport.height}px`);
+    }
+    if (viewport.stableHeight) {
+      root.style.setProperty('--tg-viewport-stable-height', `${viewport.stableHeight}px`);
+    }
+  }, [viewport]);
+
+  useEffect(() => {
+    if (!miniApp) return;
+    miniApp.ready();
+    miniApp.expand?.();
+    miniApp.requestFullscreen?.();
+    miniApp.lockOrientation?.('portrait');
+
+    const onFullscreen = () => {
+      setIsFullscreen(Boolean(miniApp.isFullscreen));
+    };
+    const onActivated = () => setIsAppActive(true);
+    const onDeactivated = () => setIsAppActive(false);
+    const onHomeScreenAdded = () => setHomeScreenStatus('added');
+
+    miniApp.onEvent?.('fullscreenChanged', onFullscreen);
+    miniApp.onEvent?.('activated', onActivated);
+    miniApp.onEvent?.('deactivated', onDeactivated);
+    miniApp.onEvent?.('homeScreenAdded', onHomeScreenAdded);
+
+    miniApp.checkHomeScreenStatus?.((status) => {
+      if (status) {
+        setHomeScreenStatus(status);
+      }
+    });
+
+    const safeAreaHandler = () => {
+      const root = document.documentElement;
+      const safeArea = miniApp.safeAreaInset;
+      if (!safeArea) return;
+      root.style.setProperty('--tg-safe-area-top', `${safeArea.top ?? 0}px`);
+      root.style.setProperty('--tg-safe-area-bottom', `${safeArea.bottom ?? 0}px`);
+      root.style.setProperty('--tg-safe-area-left', `${safeArea.left ?? 0}px`);
+      root.style.setProperty('--tg-safe-area-right', `${safeArea.right ?? 0}px`);
+    };
+
+    miniApp.onEvent?.('safeAreaChanged', safeAreaHandler);
+    safeAreaHandler();
+
+    return () => {
+      miniApp.offEvent?.('fullscreenChanged', onFullscreen);
+      miniApp.offEvent?.('activated', onActivated);
+      miniApp.offEvent?.('deactivated', onDeactivated);
+      miniApp.offEvent?.('homeScreenAdded', onHomeScreenAdded);
+      miniApp.offEvent?.('safeAreaChanged', safeAreaHandler);
+    };
+  }, [miniApp]);
+
+  useEffect(() => {
+    if (!miniApp?.MainButton) return undefined;
+
+    const { MainButton } = miniApp;
     const handleMainButtonClick = () => {
-      HapticFeedback?.impactOccurred?.('medium');
+      miniApp?.HapticFeedback?.impactOccurred?.('medium');
       setIsCartOpen((prev) => !prev);
     };
 
     MainButton.onClick(handleMainButtonClick);
 
     return () => {
-      telegram.MainButton?.offClick?.(handleMainButtonClick);
+      miniApp.MainButton?.offClick?.(handleMainButtonClick);
     };
-  }, [telegram]);
+  }, [miniApp]);
 
   useEffect(() => {
-    if (!telegram?.MainButton) return;
+    if (!miniApp?.MainButton) return;
 
-    const { MainButton } = telegram;
+    const { MainButton } = miniApp;
     if (!cart.length) {
       MainButton.hide();
       return;
@@ -113,14 +194,14 @@ const App = () => {
     MainButton.setText(isCartOpen ? 'Fermer le panier' : 'Voir le panier');
     MainButton.show();
     MainButton.enable();
-  }, [telegram, cart.length, isCartOpen]);
+  }, [miniApp, cart.length, isCartOpen]);
 
   useEffect(() => {
-    if (!telegram?.BackButton) return undefined;
+    if (!miniApp?.BackButton) return undefined;
 
-    const { BackButton, HapticFeedback } = telegram;
+    const { BackButton } = miniApp;
     const handleBack = () => {
-      HapticFeedback?.impactOccurred?.('light');
+      miniApp?.HapticFeedback?.impactOccurred?.('light');
       if (viewerOpen) {
         closeViewer();
         return;
@@ -154,9 +235,9 @@ const App = () => {
     }
 
     return () => {
-      telegram.BackButton?.offClick?.(handleBack);
+      miniApp.BackButton?.offClick?.(handleBack);
     };
-  }, [telegram, viewerOpen, selectedProduct, isContactOpen, showConfirmation, isCartOpen, closeViewer]);
+  }, [miniApp, viewerOpen, selectedProduct, isContactOpen, showConfirmation, isCartOpen, closeViewer]);
 
   useEffect(() => {
     let cleanup;
@@ -175,59 +256,6 @@ const App = () => {
         cleanup();
       }
     };
-  }, []);
-
-  const clearWelcomeTimers = useCallback(() => {
-    if (welcomeTimerRef.current) {
-      clearTimeout(welcomeTimerRef.current);
-      welcomeTimerRef.current = null;
-    }
-    if (welcomeUnmountRef.current) {
-      clearTimeout(welcomeUnmountRef.current);
-      welcomeUnmountRef.current = null;
-    }
-  }, []);
-
-  const markWelcomeSeen = useCallback(() => {
-    try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(WELCOME_STORAGE_KEY, '1');
-      }
-    } catch (error) {
-      /* ignore */
-    }
-  }, []);
-
-  const handleDismissWelcome = useCallback((source = 'manual') => {
-    clearWelcomeTimers();
-    markWelcomeSeen();
-    setShowWelcome((prev) => {
-      if (prev) {
-        trackEvent('welcome_dismissed', { source });
-      }
-      return false;
-    });
-  }, [clearWelcomeTimers, markWelcomeSeen]);
-
-  const openViewer = useCallback((product, startIndex = 0) => {
-    setViewerProduct(product);
-    setViewerStartIndex(startIndex || 0);
-    setViewerOpen(true);
-    if (typeof document !== 'undefined') {
-      document.body.style.overflow = 'hidden';
-    }
-    trackEvent('viewer_opened', { product: product?.name, startIndex });
-  }, []);
-
-  const closeViewer = useCallback(() => {
-    setViewerOpen(false);
-    setViewerProduct(null);
-    setViewerStartIndex(0);
-    setSelectedProduct(null);
-    if (typeof document !== 'undefined') {
-      document.body.style.overflow = 'unset';
-    }
-    trackEvent('viewer_closed');
   }, []);
 
   useEffect(() => {
@@ -288,6 +316,73 @@ const App = () => {
 
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    try {
+      const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 900 || /Mobi|Android/i.test(navigator.userAgent || ''));
+      const toPreload = PRODUCTS.slice(0, isMobile ? 3 : 5);
+
+      toPreload.forEach((product) => {
+        if (product.thumbnail) {
+          const img = new Image();
+          img.src = product.thumbnail;
+          img.fetchPriority = 'high';
+        }
+      });
+
+      toPreload.forEach((product, index) => {
+        const videoUrls = (product.media || []).slice(0, 1);
+        videoUrls.forEach((src) => {
+          if (!src.match(/\.(mp4|webm|ogg)(\?.*)?$/i)) {
+            const img = new Image();
+            img.src = src;
+            return;
+          }
+
+          setTimeout(() => {
+            videoManagerRef.current.preloadVideo(src);
+          }, index * (isMobile ? 50 : 200));
+        });
+      });
+
+      if (isMobile && typeof document !== 'undefined') {
+        const menuVideos = Array.from(document.querySelectorAll('main video')).slice(0, 5);
+        menuVideos.forEach((videoElement, idx) => {
+          try {
+            videoElement.muted = true;
+            videoElement.defaultMuted = true;
+            videoElement.playsInline = true;
+            videoElement.setAttribute('playsinline', '');
+            videoElement.setAttribute('muted', '');
+            videoElement.preload = 'auto';
+            videoElement.load();
+
+            let attempts = 0;
+            const tryPlay = () => {
+              attempts += 1;
+              videoElement.play().then(() => {
+                logMediaMetric(videoElement.dataset?.productId || `menu_video_${idx}`, 0, 'menu_autoplay_success');
+              }).catch(() => {
+                if (attempts < 4) {
+                  setTimeout(tryPlay, 400 + attempts * 200);
+                } else {
+                  logMediaMetric(videoElement.dataset?.productId || `menu_video_${idx}`, 0, 'menu_autoplay_failed');
+                }
+              });
+            };
+
+            tryPlay();
+          } catch (error) {
+            /* ignore per-video errors */
+          }
+        });
+      }
+    } catch (error) {
+      /* ignore preload errors */
+    }
+  }, [isLoading]);
 
   useEffect(() => {
     if (isLoading || welcomeRendered) return;
@@ -452,6 +547,12 @@ const App = () => {
     };
   }, []);
 
+  const handleAddToHomeScreen = useCallback(() => {
+    if (!miniApp?.addToHomeScreen) return;
+    miniApp?.HapticFeedback?.impactOccurred?.('light');
+    miniApp.addToHomeScreen();
+  }, [miniApp]);
+
   const handleThemeToggle = useCallback(async () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
@@ -470,6 +571,7 @@ const App = () => {
   const addToCart = useCallback(async (product, quantity, price) => {
     if (quantity < MIN_QUANTITY) {
       showNotificationMessage(`Minimum ${MIN_QUANTITY}g par produit`, 'error');
+      miniApp?.HapticFeedback?.impactOccurred?.('medium');
       return;
     }
 
@@ -729,6 +831,26 @@ const App = () => {
       {showParticles && <ParticlesBackground />}
 
       <ThemeToggle theme={theme} onToggle={handleThemeToggle} cartOpen={isCartOpen} />
+
+      {miniApp?.addToHomeScreen && homeScreenStatus !== 'added' && (
+        <div className="max-w-7xl mx-auto px-4 pt-4">
+          <div className="glass-dark border border-white/10 rounded-2xl p-4 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-white font-semibold text-sm">📱 Ajouter Tangerine à l’écran d’accueil</p>
+              <p className="text-white/60 text-xs">
+                Accès direct depuis Telegram. Statut : {homeScreenStatus}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleAddToHomeScreen}
+              className="glass-cta px-4 py-2 rounded-xl text-sm font-semibold"
+            >
+              Ajouter
+            </button>
+          </div>
+        </div>
+      )}
 
       <header className="relative z-10 max-w-7xl mx-auto px-4 pb-4 pt-12 md:pt-16 telegram-header">
         <div className="flex items-center justify-center gap-4 mb-6">

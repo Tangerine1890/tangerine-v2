@@ -1,5 +1,35 @@
 const hasWindow = () => typeof window !== 'undefined';
 
+const CONNECTION_WEIGHT = {
+  high: 1,
+  medium: 0.7,
+  low: 0.4,
+};
+
+const pickConnectionTier = () => {
+  if (!hasWindow()) return 'high';
+  try {
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (!connection) return 'high';
+    if (connection.saveData) return 'low';
+    const type = (connection.effectiveType || '').toLowerCase();
+    if (type.includes('4g') || type.includes('wifi')) return 'high';
+    if (type.includes('3g')) return 'medium';
+    return 'low';
+  } catch (error) {
+    return 'high';
+  }
+};
+
+export const selectMediaSource = (sources = []) => {
+  if (!Array.isArray(sources) || sources.length === 0) return null;
+  const tier = pickConnectionTier();
+  const weight = CONNECTION_WEIGHT[tier] || 1;
+  const sorted = [...sources].sort((a, b) => (a.quality || 0) - (b.quality || 0));
+  const targetIndex = Math.max(0, Math.min(sorted.length - 1, Math.round((sorted.length - 1) * weight)));
+  return sorted[targetIndex]?.url || sorted[sorted.length - 1]?.url || null;
+};
+
 class VideoManager {
   constructor(maxConcurrent = 3) {
     this.maxConcurrent = maxConcurrent;
@@ -7,6 +37,7 @@ class VideoManager {
     this.cache = new Map();
     this.queue = [];
     this.isIosTelegram = this.detectIosTelegram();
+    this.connectionTier = pickConnectionTier();
   }
 
   detectIosTelegram() {
@@ -75,11 +106,13 @@ class VideoManager {
       videoElement.setAttribute('muted', '');
       videoElement.setAttribute('webkit-playsinline', '');
 
+      const targetSource = options.sources ? selectMediaSource(options.sources) : src;
+      const finalSrc = targetSource || src;
       const useDirectSrc = options.forceDirectSrc || this.isIosTelegram;
       if (useDirectSrc) {
-        videoElement.src = src;
+        videoElement.src = finalSrc;
       } else {
-        const objectUrl = await this.loadVideo(src, options);
+        const objectUrl = await this.loadVideo(finalSrc, options);
         videoElement.src = objectUrl;
       }
 
