@@ -1,3 +1,7 @@
+const withMediaSources = (media = []) => media.map((url) => ([
+  { url, quality: 1 },
+]));
+
 export const PRODUCTS = [
   {
     id: 't1',
@@ -10,6 +14,11 @@ export const PRODUCTS = [
       'https://file.garden/aRCOOh-cGER2BR_t/tropicali_2.mp4',
       'https://file.garden/aRCOOh-cGER2BR_t/tropicali_3.mp4'
     ],
+    mediaSources: withMediaSources([
+      'https://file.garden/aRCOOh-cGER2BR_t/PICALI00%20(1)%20(1).mp4',
+      'https://file.garden/aRCOOh-cGER2BR_t/tropicali_2.mp4',
+      'https://file.garden/aRCOOh-cGER2BR_t/tropicali_3.mp4'
+    ]),
     posters: [
       'https://file.garden/aRCOOh-cGER2BR_t/IMG_1258_converted.avif',
       'https://file.garden/aRCOOh-cGER2BR_t/IMG_1259_converted.avif',
@@ -27,6 +36,10 @@ export const PRODUCTS = [
       'https://file.garden/aRCOOh-cGER2BR_t/kush_1.mp4',
       'https://file.garden/aRCOOh-cGER2BR_t/kush_2.mp4'
     ],
+    mediaSources: withMediaSources([
+      'https://file.garden/aRCOOh-cGER2BR_t/kush_1.mp4',
+      'https://file.garden/aRCOOh-cGER2BR_t/kush_2.mp4'
+    ]),
     posters: [
       'https://file.garden/aRCOOh-cGER2BR_t/IMG_1239.avif',
       'https://file.garden/aRCOOh-cGER2BR_t/IMG_1243.avif'
@@ -41,6 +54,7 @@ export const PRODUCTS = [
     emoji: '🍊',
     badge: 'Sold out soon!',
     media: ['https://file.garden/aRCOOh-cGER2BR_t/tropi_tangie.mp4'],
+    mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/tropi_tangie.mp4']),
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1254.avif'],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1254.avif',
     desc: "Explosion d'agrumes et tangerine juteuse. Parfait pour la journée, énergisant et euphorisant."
@@ -51,6 +65,7 @@ export const PRODUCTS = [
     name: 'Miracle Alien Cookies',
     emoji: '🍪',
     media: ['https://file.garden/aRCOOh-cGER2BR_t/mac.mp4'],
+    mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/mac.mp4']),
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1245%20(1).avif'],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1245%20(1).avif',
     desc: 'Saveur gourmande de cookies fraîchement cuits et crème onctueuse. Une expérience douce et réconfortante.'
@@ -61,6 +76,7 @@ export const PRODUCTS = [
     name: 'Tchikita Banana',
     emoji: '🍌',
     media: ['https://file.garden/aRCOOh-cGER2BR_t/banana.mp4'],
+    mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/banana.mp4']),
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1247.avif'],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1247.avif',
     desc: 'Douceur fruitée de banane mûre avec finale sucrée. Effet relaxant et apaisant.'
@@ -71,6 +87,7 @@ export const PRODUCTS = [
     name: 'Gelato Cheesecake',
     emoji: '🍰',
     media: ['https://file.garden/aRCOOh-cGER2BR_t/cheesecake.mp4'],
+    mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/cheesecake.mp4']),
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1253.avif'],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1253.avif',
     desc: 'Texture crémeuse et profil sucré avec arômes de dessert raffiné. Une douceur irrésistible.'
@@ -81,6 +98,7 @@ export const PRODUCTS = [
     name: 'Tropicana Cherry',
     emoji: '🍒',
     media: ['https://file.garden/aRCOOh-cGER2BR_t/cherry.mp4'],
+    mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/cherry.mp4']),
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1252.avif'],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1252.avif',
     desc: 'Cerise tropicale juteuse et sucrée avec finale rafraîchissante. Équilibre parfait.'
@@ -91,6 +109,7 @@ export const PRODUCTS = [
     name: 'Grape Pie X Biscotti',
     emoji: '🍇',
     media: ['https://file.garden/aRCOOh-cGER2BR_t/grape.mp4'],
+    mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/grape.mp4']),
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1246.avif'],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1246.avif',
     desc: 'Raisin doux mélangé à des notes de biscuits croquants. Harmonie subtile et saveur élégante.'
