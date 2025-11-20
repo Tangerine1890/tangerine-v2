@@ -70,6 +70,18 @@ const App = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [welcomeRendered, setWelcomeRendered] = useState(false);
   const miniApp = miniAppFeature;
+
+  const openViewer = useCallback((product, startIndex = 0) => {
+    setViewerProduct(product);
+    setViewerStartIndex(startIndex ?? 0);
+    setViewerOpen(true);
+  }, []);
+
+  const closeViewer = useCallback(() => {
+    setViewerOpen(false);
+    setViewerStartIndex(0);
+    setViewerProduct(null);
+  }, []);
   const themeParams = useSignal(themeParamsFeature.state);
   const viewport = useSignal(viewportFeature.state);
   const welcomeTimerRef = useRef(null);
