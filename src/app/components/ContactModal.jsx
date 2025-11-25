@@ -1,27 +1,65 @@
+import { useEffect, useRef } from 'react';
 import { registerTangerineComponent } from '../../lib/registry.js';
 import { trackEvent } from '../utils/analytics.js';
 
 const ContactModalComponent = ({ isOpen, onClose }) => {
+  const dialogRef = useRef(null);
+  const closeRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const focusables = () => {
+      if (!dialogRef.current) return [];
+      return Array.from(dialogRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+        .filter((el) => !el.hasAttribute('disabled'));
+    };
+    const onKeyDown = (event) => {
+      if (event.key !== 'Tab') return;
+      const nodes = focusables();
+      if (nodes.length === 0) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (event.shiftKey) {
+        if (document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        }
+      } else if (document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    const node = dialogRef.current;
+    node?.addEventListener('keydown', onKeyDown);
+    (closeRef.current || node)?.focus();
+    return () => node?.removeEventListener('keydown', onKeyDown);
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
     <div
       className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in-up"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="contact-title"
     >
       <div
         className="glass-dark rounded-3xl max-w-md w-full animate-slide-up max-h-[90vh] overflow-y-auto"
         onClick={(event) => event.stopPropagation()}
+        ref={dialogRef}
       >
         <div className="p-6 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-3xl">💬</span>
-            <h3 className="text-2xl font-bold text-white">Contact</h3>
+            <h3 id="contact-title" className="text-2xl font-bold text-white">Contact</h3>
           </div>
           <button
             onClick={onClose}
             className="text-white/60 hover:text-white text-3xl leading-none transition-all"
-          >
+            ref={closeRef}
+            >
             ×
           </button>
         </div>

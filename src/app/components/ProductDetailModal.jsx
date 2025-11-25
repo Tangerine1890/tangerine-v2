@@ -122,6 +122,9 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
     <div
       className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in-up"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="product-detail-title"
     >
       <div
         className="glass-dark rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
@@ -216,7 +219,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
             <div className="absolute bottom-4 left-6">
               <div className="flex items-center gap-3">
                 <span className="text-5xl">{product.emoji}</span>
-                <h2 className="text-3xl font-black text-white">{product.name}</h2>
+                <h2 id="product-detail-title" className="text-3xl font-black text-white">{product.name}</h2>
               </div>
             </div>
           </div>

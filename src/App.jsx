@@ -267,10 +267,21 @@ const App = () => {
       return;
     }
 
+    try {
+      if (themeParams) {
+        MainButton.setParams({
+          color: themeParams.buttonColor,
+          text_color: themeParams.buttonTextColor,
+        });
+      }
+    } catch (error) {
+      /* ignore */
+    }
+
     MainButton.setText(isCartOpen ? 'Fermer le panier' : 'Voir le panier');
     MainButton.show();
     MainButton.enable();
-  }, [miniApp, cart.length, isCartOpen]);
+  }, [miniApp, cart.length, isCartOpen, themeParams]);
 
   useEffect(() => {
     if (!miniApp?.BackButton) return undefined;
@@ -809,9 +820,10 @@ const App = () => {
     setOrderHistory(newOrderHistory);
     await StorageManager.saveOrderHistory(newOrderHistory);
 
-    const telegramURL = `https://t.me/Tangerine_212?text=${encodeURIComponent(
-      `🎉 NOUVELLE COMMANDE TANGERINE\n\n${message}\n\n📦 Sous-total: ${subtotal}€${promoText}\n🚚 Livraison ${DELIVERY_PRICES[deliveryCity].name}: ${deliveryPrice === 0 ? 'GRATUIT' : `${deliveryPrice}€`}\n💳 Paiement: ${paymentText}\n\n💰 TOTAL: ${totalPrice}€`,
-    )}`;
+    const payload = {
+      type: 'order',
+      order,
+    };
 
     trackEvent('order_confirmed', {
       total: totalPrice,
@@ -822,8 +834,22 @@ const App = () => {
       discount,
     });
 
-    if (typeof window !== 'undefined') {
-      window.open(telegramURL, '_blank');
+    try {
+      if (miniApp?.sendData) {
+        miniApp.sendData(JSON.stringify(payload));
+      } else if (miniApp?.openTelegramLink) {
+        const telegramURL = `https://t.me/Tangerine_212?text=${encodeURIComponent(
+          `🎉 NOUVELLE COMMANDE TANGERINE\n\n${message}\n\n📦 Sous-total: ${subtotal}€${promoText}\n🚚 Livraison ${DELIVERY_PRICES[deliveryCity].name}: ${deliveryPrice === 0 ? 'GRATUIT' : `${deliveryPrice}€`}\n💳 Paiement: ${paymentText}\n\n💰 TOTAL: ${totalPrice}€`,
+        )}`;
+        miniApp.openTelegramLink(telegramURL);
+      } else if (typeof window !== 'undefined') {
+        const telegramURL = `https://t.me/Tangerine_212?text=${encodeURIComponent(
+          `🎉 NOUVELLE COMMANDE TANGERINE\n\n${message}\n\n📦 Sous-total: ${subtotal}€${promoText}\n🚚 Livraison ${DELIVERY_PRICES[deliveryCity].name}: ${deliveryPrice === 0 ? 'GRATUIT' : `${deliveryPrice}€`}\n💳 Paiement: ${paymentText}\n\n💰 TOTAL: ${totalPrice}€`,
+        )}`;
+        window.open(telegramURL, '_blank');
+      }
+    } catch (error) {
+      /* ignore */
     }
 
     setCart([]);
@@ -1003,16 +1029,18 @@ const App = () => {
           onClick={() => handleCategoryChange('all')}
           className={`${textClasses} hover:scale-105 active:scale-95 transition-all nav-icon-btn`}
           title="Accueil"
+          aria-label="Accueil"
         >
-          <span>🏠</span>
+          <span aria-hidden="true">🏠</span>
         </button>
 
         <button
           onClick={() => setIsCartOpen(true)}
           ref={cartButtonRef}
           className={`relative bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500 hover:from-orange-600 hover:via-pink-600 hover:to-orange-600 text-white rounded-full font-bold transition-all hover:scale-105 active:scale-95 glow cart-pill ${cart.length > 0 && !meetsMinimum ? 'has-progress' : ''}`}
+          aria-label="Panier"
         >
-          <span className="mr-2">🛒</span>
+          <span className="mr-2" aria-hidden="true">🛒</span>
           Panier
           {cart.length > 0 && (
             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center font-bold animate-pulse">
@@ -1031,8 +1059,9 @@ const App = () => {
           onClick={() => setIsContactOpen(true)}
           className={`${textClasses} hover:scale-105 active:scale-95 transition-all nav-icon-btn`}
           title="Contact"
+          aria-label="Contact"
         >
-          <span>💬</span>
+          <span aria-hidden="true">💬</span>
         </button>
       </nav>
 
