@@ -133,6 +133,15 @@ const App = () => {
   const [homeScreenStatus, setHomeScreenStatus] = useState('unknown');
   const [isAppActive, setIsAppActive] = useState(true);
   const [horizontalScrollProgress, setHorizontalScrollProgress] = useState(0);
+  const isTelegramIOS = useMemo(() => {
+    try {
+      if (typeof window === 'undefined') return false;
+      const plat = window.Telegram?.WebApp?.platform || '';
+      return String(plat).toLowerCase() === 'ios';
+    } catch (error) {
+      return false;
+    }
+  }, []);
 
   useEffect(() => {
     ensureTangerineNamespace();
@@ -406,6 +415,7 @@ const App = () => {
 
   useEffect(() => {
     if (isLoading) return;
+    if (isTelegramIOS) return;
 
     try {
       const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 900 || /Mobi|Android/i.test(navigator.userAgent || ''));
@@ -469,7 +479,7 @@ const App = () => {
     } catch (error) {
       /* ignore preload errors */
     }
-  }, [isLoading]);
+  }, [isLoading, isTelegramIOS]);
 
   useEffect(() => {
     if (isLoading || welcomeRendered) return;
@@ -509,6 +519,7 @@ const App = () => {
 
   useEffect(() => {
     if (isLoading) return;
+    if (isTelegramIOS) return;
 
     try {
       const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 900 || /Mobi|Android/i.test(navigator.userAgent || ''));
@@ -572,7 +583,7 @@ const App = () => {
     } catch (error) {
       /* ignore preload errors */
     }
-  }, [isLoading]);
+  }, [isLoading, isTelegramIOS]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -922,7 +933,7 @@ const App = () => {
         <div className="noise-overlay" />
       </div>
 
-      {showParticles && <ParticlesBackground />}
+      {showParticles && !isTelegramIOS && <ParticlesBackground />}
 
       <ThemeToggle theme={theme} onToggle={handleThemeToggle} cartOpen={isCartOpen} />
 
