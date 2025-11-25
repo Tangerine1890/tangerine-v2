@@ -166,28 +166,36 @@ const App = () => {
 
   useEffect(() => {
     if (!miniApp) return;
-    miniApp.ready();
-    miniApp.expand?.();
-    miniApp.requestFullscreen?.();
-    miniApp.lockOrientation?.('portrait');
+    try {
+      miniApp.ready?.();
+      miniApp.expand?.();
+      miniApp.requestFullscreen?.();
+      miniApp.lockOrientation?.('portrait');
+    } catch (error) {
+      console.warn('TMA SDK initialization warning (expected in dev):', error);
+    }
 
-    const onFullscreen = () => {
-      setIsFullscreen(Boolean(miniApp.isFullscreen));
-    };
-    const onActivated = () => setIsAppActive(true);
-    const onDeactivated = () => setIsAppActive(false);
-    const onHomeScreenAdded = () => setHomeScreenStatus('added');
+    try {
+      const onFullscreen = () => {
+        setIsFullscreen(Boolean(miniApp.isFullscreen));
+      };
+      const onActivated = () => setIsAppActive(true);
+      const onDeactivated = () => setIsAppActive(false);
+      const onHomeScreenAdded = () => setHomeScreenStatus('added');
 
-    miniApp.onEvent?.('fullscreenChanged', onFullscreen);
-    miniApp.onEvent?.('activated', onActivated);
-    miniApp.onEvent?.('deactivated', onDeactivated);
-    miniApp.onEvent?.('homeScreenAdded', onHomeScreenAdded);
+      miniApp.onEvent?.('fullscreenChanged', onFullscreen);
+      miniApp.onEvent?.('activated', onActivated);
+      miniApp.onEvent?.('deactivated', onDeactivated);
+      miniApp.onEvent?.('homeScreenAdded', onHomeScreenAdded);
 
-    miniApp.checkHomeScreenStatus?.((status) => {
-      if (status) {
-        setHomeScreenStatus(status);
-      }
-    });
+      miniApp.checkHomeScreenStatus?.((status) => {
+        if (status) {
+          setHomeScreenStatus(status);
+        }
+      });
+    } catch (error) {
+      console.warn('TMA event registration warning:', error);
+    }
 
     const safeAreaHandler = () => {
       const root = document.documentElement;
