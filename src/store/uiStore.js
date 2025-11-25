@@ -29,4 +29,8 @@ export const useUIStore = create((set) => ({
   welcomeRendered: false,
   setShowWelcome: (show) => set({ showWelcome: show }),
   setWelcomeRendered: (rendered) => set({ welcomeRendered: rendered }),
+
+  animations: [],
+  addAnimation: (anim) => set((state) => ({ animations: [...state.animations, anim] })),
+  removeAnimation: (id) => set((state) => ({ animations: state.animations.filter((a) => a.id !== id) })),
 }));

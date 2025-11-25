@@ -6,7 +6,7 @@ import { useHaptic } from './useHaptic.js';
 
 export const useTMALogic = () => {
   const miniApp = miniAppFeature;
-  const { isCartOpen, setCartOpen } = useCartStore();
+  const { isCartOpen, setCartOpen, cart } = useCartStore();
   const { viewerOpen, selectedProduct, isContactOpen, showConfirmation } = useUIStore();
   const { light } = useHaptic();
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -56,7 +56,7 @@ export const useTMALogic = () => {
 
     miniApp.MainButton.onClick(handleMainButtonClick);
 
-    if (!isCartOpen && !selectedProduct) {
+    if (cart.length === 0) {
       miniApp.MainButton.hide();
     } else {
       miniApp.MainButton.setText(isCartOpen ? 'Fermer le panier' : 'Voir le panier');
@@ -67,7 +67,7 @@ export const useTMALogic = () => {
     return () => {
       miniApp.MainButton?.offClick?.(handleMainButtonClick);
     };
-  }, [miniApp, isCartOpen, selectedProduct, light, setCartOpen]);
+  }, [miniApp, isCartOpen, cart.length, light, setCartOpen]);
 
   // Back Button
   useEffect(() => {
@@ -102,5 +102,6 @@ export const useTMALogic = () => {
     isFullscreen,
     homeScreenStatus,
     handleAddToHomeScreen,
+    miniApp,
   };
 };
