@@ -222,9 +222,9 @@ body {
   background: rgba(15, 23, 42, 0.85);
   color: #fef9f5;
   font-weight: 700;
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   letter-spacing: 0.04em;
-  padding: 0.75rem;
+  padding: 0.6rem 0.9rem;
   border-radius: 999px;
   border: 2px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.5), 0 0 30px rgba(249, 115, 22, 0.4);
@@ -313,7 +313,6 @@ body {
 }
 
 .bottom-nav:hover {
-  transform: translateY(-2px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
@@ -940,6 +939,7 @@ a:focus-visible {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -951,6 +951,7 @@ a:focus-visible {
     opacity: 0;
     transform: translateX(50px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -958,10 +959,12 @@ a:focus-visible {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
@@ -971,16 +974,19 @@ a:focus-visible {
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
 }
 
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-15px);
   }
@@ -997,6 +1003,7 @@ a:focus-visible {
     transform: translateY(100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -1008,6 +1015,7 @@ a:focus-visible {
     transform: scale(0.9);
     opacity: 0;
   }
+
   to {
     transform: scale(1);
     opacity: 1;
@@ -1019,6 +1027,7 @@ a:focus-visible {
     transform: translateY(-100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -1030,6 +1039,7 @@ a:focus-visible {
     transform: scale(0.8);
     opacity: 0;
   }
+
   to {
     transform: scale(1);
     opacity: 1;
@@ -1041,6 +1051,7 @@ a:focus-visible {
     transform: translateY(0) rotate(0);
     opacity: 1;
   }
+
   100% {
     transform: translateY(100vh) rotate(720deg);
     opacity: 0;
@@ -1052,10 +1063,12 @@ a:focus-visible {
     transform: scale(1);
     box-shadow: 0 0 0 rgba(255, 255, 255, 0);
   }
+
   35% {
     transform: scale(1.1);
     box-shadow: 0 0 22px rgba(255, 255, 255, 0.35);
   }
+
   100% {
     transform: scale(1);
     box-shadow: 0 0 0 rgba(255, 255, 255, 0);
@@ -1066,12 +1079,15 @@ a:focus-visible {
   0% {
     transform: scale(1);
   }
+
   40% {
     transform: scale(0.9);
   }
+
   70% {
     transform: scale(1.05);
   }
+
   100% {
     transform: scale(1);
   }
@@ -1081,20 +1097,24 @@ a:focus-visible {
   0% {
     transform: translate3d(0, 0, 0) scale(1);
   }
+
   50% {
     transform: translate3d(6%, -8%, 0) scale(1.08);
   }
+
   100% {
     transform: translate3d(-5%, 9%, 0) scale(0.97);
   }
 }
 
 @keyframes welcomePulse {
+
   0%,
   100% {
     letter-spacing: 0.08em;
     transform: scale(1);
   }
+
   50% {
     letter-spacing: 0.12em;
     transform: scale(1.05);
@@ -1107,6 +1127,7 @@ a:focus-visible {
     transform: scale(1.08);
     filter: blur(30px);
   }
+
   100% {
     opacity: 1;
     transform: scale(1);
@@ -1120,14 +1141,17 @@ a:focus-visible {
     opacity: 0;
     filter: blur(12px);
   }
+
   38% {
     transform: scale(1);
     opacity: 1;
     filter: blur(0);
   }
+
   72% {
     transform: scale(1.06);
   }
+
   100% {
     transform: scale(1);
   }
@@ -1138,9 +1162,11 @@ a:focus-visible {
     transform: translateX(-130%);
     opacity: 0;
   }
+
   40% {
     opacity: 0.55;
   }
+
   100% {
     transform: translateX(130%);
     opacity: 0;
@@ -1153,11 +1179,13 @@ a:focus-visible {
     transform: translateY(18px);
     letter-spacing: 0.6em;
   }
+
   45% {
     opacity: 1;
     transform: translateY(0);
     letter-spacing: 0.35em;
   }
+
   100% {
     opacity: 1;
     letter-spacing: 0.24em;
@@ -1165,6 +1193,7 @@ a:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {

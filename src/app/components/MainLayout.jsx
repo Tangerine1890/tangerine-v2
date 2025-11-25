@@ -74,7 +74,7 @@ export const MainLayout = ({
     }
 
     const bgClasses = theme === 'light'
-        ? 'min-h-screen bg-gradient-to-br from-[#f8fafc] via-[#edf4ef] to-[#f8fafc] relative overflow-hidden'
+        ? 'min-h-screen bg-gradient-to-br from-[#fef7f3] via-[#fdf4ef] to-[#fcf1eb] relative overflow-hidden'
         : 'min-h-screen bg-gradient-to-br from-[#05090b] via-[#0b1411] to-[#05090b] relative overflow-hidden';
     const textClasses = theme === 'light' ? 'text-slate-900' : 'text-white';
 

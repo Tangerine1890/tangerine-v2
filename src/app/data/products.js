@@ -8,7 +8,7 @@ export const PRODUCTS = [
     category: 'wpff',
     name: 'Tropicali',
     emoji: '🥭',
-    badge: 'Sold out soon!',
+    badge: 'SOLD OUT 🔥',
     media: [
       'https://file.garden/aRCOOh-cGER2BR_t/PICALI00%20(1)%20(1).mp4',
       'https://file.garden/aRCOOh-cGER2BR_t/tropicali_2.mp4',
@@ -46,6 +46,17 @@ export const PRODUCTS = [
     ],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1239.avif',
     desc: 'Arômes mentholés et terreux avec notes de cookies. Relaxation profonde et sensation apaisante prolongée.'
+  },
+  {
+    id: 'ds5',
+    category: 'doublestatic',
+    name: 'Tropicana Cherry',
+    emoji: '🍒',
+    media: ['https://file.garden/aRCOOh-cGER2BR_t/cherry.mp4'],
+    mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/cherry.mp4']),
+    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1252.avif'],
+    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1252.avif',
+    desc: 'Cerise tropicale juteuse et sucrée avec finale rafraîchissante. Équilibre parfait.'
   },
   {
     id: 'ds1',
@@ -91,17 +102,6 @@ export const PRODUCTS = [
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1253.avif'],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1253.avif',
     desc: 'Texture crémeuse et profil sucré avec arômes de dessert raffiné. Une douceur irrésistible.'
-  },
-  {
-    id: 'ds5',
-    category: 'doublestatic',
-    name: 'Tropicana Cherry',
-    emoji: '🍒',
-    media: ['https://file.garden/aRCOOh-cGER2BR_t/cherry.mp4'],
-    mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/cherry.mp4']),
-    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1252.avif'],
-    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1252.avif',
-    desc: 'Cerise tropicale juteuse et sucrée avec finale rafraîchissante. Équilibre parfait.'
   },
   {
     id: 'ff1',

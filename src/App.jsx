@@ -305,7 +305,7 @@ const App = () => {
 
       addAnimation({
         id: Date.now(),
-        text: product.emoji,
+        text: `${product.emoji} +${quantity}g`,
         startX, startY,
         midX, midY,
         endX, endY
