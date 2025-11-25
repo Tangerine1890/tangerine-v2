@@ -21,7 +21,7 @@ export const useCartLogic = () => {
         await addToCart(product, quantity, price);
         success();
         showNotification(`${product.emoji} ${product.name} ajouté`, 'success');
-      } catch (err) {
+      } catch {
         error();
         showNotification('Erreur lors de l\'ajout', 'error');
       }
@@ -35,7 +35,7 @@ export const useCartLogic = () => {
         await removeFromCart(index);
         medium();
         showNotification('Produit retiré', 'info');
-      } catch (err) {
+      } catch {
         error();
         showNotification('Erreur lors de la suppression', 'error');
       }
@@ -48,7 +48,7 @@ export const useCartLogic = () => {
       try {
         await updateQuantity(index, newQuantity, newPrice);
         medium();
-      } catch (err) {
+      } catch {
         error();
         showNotification('Erreur lors de la mise à jour', 'error');
       }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 
 export const useSwipeGesture = (onSwipeDown, onSwipeUp, threshold = 50) => {
   const touchStartY = useRef(0);

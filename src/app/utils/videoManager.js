@@ -16,7 +16,7 @@ const pickConnectionTier = () => {
     if (type.includes('4g') || type.includes('wifi')) return 'high';
     if (type.includes('3g')) return 'medium';
     return 'low';
-  } catch (error) {
+  } catch {
     return 'high';
   }
 };
@@ -46,12 +46,12 @@ class VideoManager {
       if (window.Telegram?.WebApp?.platform) {
         return window.Telegram.WebApp.platform.toLowerCase() === 'ios';
       }
-    } catch (error) {
+    } catch {
       /* ignore */
     }
     try {
       return /iphone|ipad|ipod/i.test(window.navigator.userAgent || '');
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -92,7 +92,7 @@ class VideoManager {
 
   preloadVideo(src, options = {}) {
     if (this.cache.has(src)) return;
-    this.loadVideo(src, options).catch(() => {});
+    this.loadVideo(src, options).catch(() => { });
   }
 
   async prepareVideo(videoElement, src, options = {}) {
@@ -166,7 +166,7 @@ export const getPreferredPreload = () => {
       if (type.includes('4g') || type.includes('wifi')) return 'auto';
       return 'metadata';
     }
-  } catch (error) {
+  } catch {
     /* ignore */
   }
   return 'metadata';

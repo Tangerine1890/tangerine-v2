@@ -80,7 +80,7 @@ const getStorageBackend = () => {
 const safeParse = (value, fallback) => {
   try {
     return value != null ? JSON.parse(value) : fallback;
-  } catch (error) {
+  } catch {
     return fallback;
   }
 };
@@ -123,7 +123,7 @@ const createStorageManager = (backend) => ({
     try {
       const result = await backend.get(DELIVERY_CITY_STORAGE_KEY);
       return result?.value || 'rabat';
-    } catch (error) {
+    } catch {
       return 'rabat';
     }
   },
@@ -144,7 +144,7 @@ const createStorageManager = (backend) => ({
     try {
       const result = await backend.get(PAYMENT_METHOD_STORAGE_KEY);
       return result?.value || 'cash';
-    } catch (error) {
+    } catch {
       return 'cash';
     }
   },
@@ -165,7 +165,7 @@ const createStorageManager = (backend) => ({
     try {
       const result = await backend.get(PROMO_CODE_STORAGE_KEY);
       return result?.value || '';
-    } catch (error) {
+    } catch {
       return '';
     }
   },
@@ -228,7 +228,7 @@ const createStorageManager = (backend) => ({
     try {
       const result = await backend.get(THEME_STORAGE_KEY);
       return result?.value || 'dark';
-    } catch (error) {
+    } catch {
       return 'dark';
     }
   },

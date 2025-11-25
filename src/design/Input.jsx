@@ -1,5 +1,4 @@
 import { memo, forwardRef } from 'react';
-import { motion } from 'framer-motion';
 
 const Input = memo(forwardRef(({
   placeholder,

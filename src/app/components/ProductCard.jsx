@@ -41,6 +41,7 @@ const ProductCardComponent = memo(({
   const imageFetchPriority = isPriority ? 'high' : 'auto';
   const videoPreload = isPriority ? 'auto' : 'metadata';
   const videoFetchPriority = isPriority ? 'high' : 'low';
+  const isLoadedRef = useRef(false);
 
   const forcePlay = useCallback((reason, retryCount = 0) => {
     const video = videoRef.current;
@@ -60,7 +61,7 @@ const ProductCardComponent = memo(({
         setVideoState((prev) => (prev === 'error' ? prev : 'loaded'));
         logMediaMetric(productKey, 0, `play_success_${reason}`);
       })
-      .catch((error) => {
+      .catch(() => {
         logMediaMetric(productKey, 0, `play_error_${reason}`);
         if (retryCount < 5 && (isVisible || isInitiallyVisible)) {
           const delay = 200 * (retryCount + 1);
@@ -71,10 +72,11 @@ const ProductCardComponent = memo(({
 
   useEffect(() => {
     // Préparation immédiate de la vidéo comme dans la version legacy
-    if (!videoRef.current || !product.media?.[0] || videoState !== 'thumbnail') {
-      return () => {};
+    if (!videoRef.current || !product.media?.[0] || isLoadedRef.current) {
+      return () => { };
     }
 
+    isLoadedRef.current = true;
     setVideoState('loading');
 
     try {
@@ -90,8 +92,8 @@ const ProductCardComponent = memo(({
       category: product.category,
     });
 
-    return () => {};
-  }, [product.category, product.media, product.name, productKey, videoState]);
+    return () => { };
+  }, [product.category, product.media, product.name, productKey]);
 
   useEffect(() => {
     try {
@@ -110,7 +112,7 @@ const ProductCardComponent = memo(({
             try {
               videoRef.current.pause();
               videoRef.current.currentTime = 0;
-            } catch (error) {
+            } catch {
               // ignore pause errors
             }
           }
@@ -198,9 +200,8 @@ const ProductCardComponent = memo(({
   return (
     <div
       ref={cardRef}
-      className={`snap-center flex-shrink-0 w-80 glass rounded-3xl p-5 card-hover relative overflow-hidden group ${
-        videoState === 'loaded' && (isVisible || isInitiallyVisible) ? 'card-playing' : ''
-      }`}
+      className={`snap-center flex-shrink-0 w-80 glass rounded-3xl p-5 card-hover relative overflow-hidden group ${videoState === 'loaded' && (isVisible || isInitiallyVisible) ? 'card-playing' : ''
+        }`}
     >
       <div className="card-halo" aria-hidden="true" />
       {onToggleWishlist && (
@@ -230,9 +231,8 @@ const ProductCardComponent = memo(({
           loading={imageLoading}
           fetchpriority={imageFetchPriority}
           alt={product.name}
-          className={`absolute inset-0 w-full h-full object-cover transition-all duration-300 ${
-            videoState === 'loaded' ? 'opacity-0' : 'opacity-100'
-          }`}
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-300 ${videoState === 'loaded' ? 'opacity-0' : 'opacity-100'
+            }`}
         />
 
         {product.media?.[0] && (
@@ -279,11 +279,10 @@ const ProductCardComponent = memo(({
           <span className="text-3xl">{product.emoji}</span>
           <h3 className="text-white font-bold text-lg flex-1">{product.name}</h3>
           <span
-            className={`font-bold text-xs px-2 py-1 rounded-lg ${
-              isAccessory
-                ? 'bg-white/10 text-white/80 border border-white/10'
-                : 'text-emerald-300 bg-emerald-500/20'
-            }`}
+            className={`font-bold text-xs px-2 py-1 rounded-lg ${isAccessory
+              ? 'bg-white/10 text-white/80 border border-white/10'
+              : 'text-emerald-300 bg-emerald-500/20'
+              }`}
           >
             {isAccessory ? 'Prix à définir' : `${PRICES[product.category]}€/g`}
           </span>

@@ -51,11 +51,11 @@ const App = () => {
     isCartOpen, setCartOpen,
     selectedCategory, setSelectedCategory,
     selectedProduct, setSelectedProduct,
-    setIsContactOpen,
-    setShowConfirmation,
-    setViewer,
-    showNotification,
-    setShowWelcome,
+    isContactOpen, setIsContactOpen,
+    showConfirmation, setShowConfirmation,
+    viewerOpen, viewerProduct, viewerStartIndex, setViewer,
+    notification, hideNotification,
+    showWelcome, setShowWelcome,
     welcomeRendered, setWelcomeRendered,
     addAnimation
   } = useUIStore();
@@ -154,7 +154,7 @@ const App = () => {
       const isFast = connection ? (connection.saveData ? false : (connection.effectiveType || '').toLowerCase().includes('4g')) : true;
       const allowParticles = isFast || (typeof window !== 'undefined' && window.innerWidth >= 360);
       setShowParticles(allowParticles);
-    } catch (error) {
+    } catch {
       if (typeof window !== 'undefined') {
         setShowParticles(window.innerWidth > 700);
       }
@@ -186,7 +186,7 @@ const App = () => {
           }, index * (isMobile ? 50 : 200));
         });
       });
-    } catch (error) { /* ignore */ }
+    } catch { /* ignore */ }
   }, [isLoading, isTelegramIOS]);
 
   // Welcome Toast Logic
@@ -195,7 +195,7 @@ const App = () => {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem(WELCOME_STORAGE_KEY, '1');
       }
-    } catch (error) { /* ignore */ }
+    } catch { /* ignore */ }
   }, []);
 
   const clearWelcomeTimers = useCallback(() => {
@@ -437,6 +437,7 @@ const App = () => {
       handleThemeToggle={handleThemeToggle}
       horizontalScrollProgress={horizontalScrollProgress}
       handleCategoryChange={handleCategoryChange}
+      confettiTrigger={confettiTrigger}
 
       handleUpdateQuantity={handleUpdateQuantity}
       handleRemoveFromCart={handleRemoveFromCart}

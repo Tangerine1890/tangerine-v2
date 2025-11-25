@@ -1,6 +1,4 @@
 import { memo } from 'react';
-import { motion } from 'framer-motion';
-import { tokens } from './tokens.js';
 
 const Button = memo(({
   children,

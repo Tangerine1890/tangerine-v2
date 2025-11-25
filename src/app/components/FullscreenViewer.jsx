@@ -7,7 +7,6 @@ import {
 import { registerTangerineComponent } from '../../lib/registry.js';
 import {
   logMediaMetric,
-  trackEvent,
 } from '../utils/analytics.js';
 import { getPreferredPreload } from '../utils/videoManager.js';
 
@@ -35,8 +34,10 @@ const FullscreenViewerComponent = ({ isOpen, product, startIndex = 0, onClose })
   }, []);
 
   useEffect(() => {
-    setIndex(startIndex || 0);
-  }, [startIndex, product]);
+    if (product) {
+      setIndex(startIndex || 0);
+    }
+  }, [startIndex, product?.id]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -49,7 +50,8 @@ const FullscreenViewerComponent = ({ isOpen, product, startIndex = 0, onClose })
     };
 
     window.addEventListener('keydown', onKey);
-    resetControlsTimer();
+    const timer = setTimeout(() => setIsControlsVisible(false), 2500);
+    controlsTimerRef.current = timer;
 
     return () => {
       window.removeEventListener('keydown', onKey);
@@ -190,7 +192,7 @@ const FullscreenViewerComponent = ({ isOpen, product, startIndex = 0, onClose })
                       event.target.defaultMuted = true;
                       event.target.volume = 0;
                       logMediaMetric(product.id || product.name || 'unknown', idx, 'viewer_loadeddata');
-                    } catch (error) {
+                    } catch {
                       /* ignore */
                     }
                   }}
@@ -211,9 +213,8 @@ const FullscreenViewerComponent = ({ isOpen, product, startIndex = 0, onClose })
         </div>
 
         <div
-          className={`absolute bottom-0 left-0 right-0 z-40 transition-opacity duration-300 ${
-            isControlsVisible ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`absolute bottom-0 left-0 right-0 z-40 transition-opacity duration-300 ${isControlsVisible ? 'opacity-100' : 'opacity-0'
+            }`}
         >
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent pointer-events-none" />
           <div className="relative p-4 flex flex-col items-center">
@@ -225,9 +226,8 @@ const FullscreenViewerComponent = ({ isOpen, product, startIndex = 0, onClose })
                     event.stopPropagation();
                     setIndex(idx);
                   }}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${
-                    idx === index ? 'bg-white scale-150' : 'bg-white/40 hover:bg-white/60'
-                  }`}
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${idx === index ? 'bg-white scale-150' : 'bg-white/40 hover:bg-white/60'
+                    }`}
                   title={`Média ${idx + 1}`}
                 />
               ))}

@@ -108,12 +108,8 @@ if (typeof window !== 'undefined' && !window.Telegram) {
   };
 }
 
-import { SDKProvider } from '@tma.js/sdk-react';
-
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <SDKProvider acceptCustomStyles debug>
-      <App />
-    </SDKProvider>
+    <App />
   </StrictMode>,
 );

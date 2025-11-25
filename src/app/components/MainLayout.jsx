@@ -33,6 +33,7 @@ export const MainLayout = ({
     handleThemeToggle,
     horizontalScrollProgress,
     handleCategoryChange,
+    confettiTrigger,
 
     // Cart Actions for Drawer
     handleUpdateQuantity,
@@ -63,8 +64,7 @@ export const MainLayout = ({
         showConfirmation, setShowConfirmation,
         selectedProduct, setSelectedProduct,
         viewerOpen, viewerProduct, viewerStartIndex,
-        notification,
-        confettiTrigger
+        notification
     } = useUIStore();
 
     const { miniApp } = useTMALogic();
@@ -81,14 +81,6 @@ export const MainLayout = ({
     const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
     const meetsMinimum = subtotal >= MIN_SPEND;
     const cartProgress = Math.min(100, (subtotal / MIN_SPEND) * 100);
-
-    // Calculate totals for ConfirmationModal
-    const deliveryPrice = 0; // Passed from parent or calculated here? Better calculated here if we have access to DELIVERY_PRICES
-    // Actually, let's keep it simple and pass the handler which likely has access to scope, 
-    // OR re-calculate. For now, we'll rely on the parent or store.
-    // Wait, ConfirmationModal needs props.
-
-    // Let's assume the parent handles the heavy lifting for now to avoid duplication logic here.
 
     return (
         <div className={bgClasses}>

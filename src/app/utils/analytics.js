@@ -46,8 +46,8 @@ export const logMediaMetric = (productId, mediaIndex, eventName) => {
       }
       console.debug('mediaMetric', item);
     }
-  } catch (error) {
-    /* ignore metric failures */
+  } catch {
+    // ignore
   }
 };
 

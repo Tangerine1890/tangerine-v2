@@ -169,7 +169,7 @@ export const useTMALogic = () => {
     return () => {
       miniApp.BackButton?.offClick?.(handleBack);
     };
-  }, [miniApp, viewerOpen, selectedProduct, isContactOpen, showConfirmation, isCartOpen, light]);
+  }, [miniApp, viewerOpen, selectedProduct, isContactOpen, showConfirmation, isCartOpen, light, setViewer, setSelectedProduct, setIsContactOpen, setShowConfirmation, setCartOpen]);
 
   const handleAddToHomeScreen = useCallback(() => {
     if (!miniApp?.addToHomeScreen) return;
