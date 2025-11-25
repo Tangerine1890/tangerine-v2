@@ -923,8 +923,8 @@ const App = () => {
         </div>
       )}
 
-      {/* Large top spacing */}
-      <div className="h-20" />
+      {/* Top spacing */}
+      <div className="h-12" />
 
       <header className="relative z-10 max-w-7xl mx-auto px-4 pb-4 pt-12 md:pt-16 telegram-header">
         <div className="flex items-center justify-center gap-4 mb-6">
@@ -988,8 +988,8 @@ const App = () => {
       </main>
 
       {/* Horizontal Scroll Progress Bar */}
-      <div className="fixed left-1/2 -translate-x-1/2 z-39 w-32 h-0.5 bg-gray-700 rounded-full bottom-20 shadow-lg">
-        <div className="h-full bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500 rounded-full" style={{ width: `${horizontalScrollProgress}%`, transition: 'width 0.1s ease-out' }} />
+      <div className="relative w-full h-1 bg-gray-800 mb-2">
+        <div className="h-full bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500" style={{ width: `${horizontalScrollProgress}%`, transition: 'width 0.15s ease-out' }} />
       </div>
 
       <nav className="fixed left-1/2 -translate-x-1/2 z-40 glass-dark rounded-full shadow-2xl flex items-center transition-all duration-300 bottom-nav">
