@@ -820,10 +820,9 @@ const App = () => {
     setOrderHistory(newOrderHistory);
     await StorageManager.saveOrderHistory(newOrderHistory);
 
-    const payload = {
-      type: 'order',
-      order,
-    };
+    const telegramURL = `https://t.me/Tangerine_212?text=${encodeURIComponent(
+      `🎉 NOUVELLE COMMANDE TANGERINE\n\n${message}\n\n📦 Sous-total: ${subtotal}€${promoText}\n🚚 Livraison ${DELIVERY_PRICES[deliveryCity].name}: ${deliveryPrice === 0 ? 'GRATUIT' : `${deliveryPrice}€`}\n💳 Paiement: ${paymentText}\n\n💰 TOTAL: ${totalPrice}€`,
+    )}`;
 
     trackEvent('order_confirmed', {
       total: totalPrice,
@@ -835,17 +834,9 @@ const App = () => {
     });
 
     try {
-      if (miniApp?.sendData) {
-        miniApp.sendData(JSON.stringify(payload));
-      } else if (miniApp?.openTelegramLink) {
-        const telegramURL = `https://t.me/Tangerine_212?text=${encodeURIComponent(
-          `🎉 NOUVELLE COMMANDE TANGERINE\n\n${message}\n\n📦 Sous-total: ${subtotal}€${promoText}\n🚚 Livraison ${DELIVERY_PRICES[deliveryCity].name}: ${deliveryPrice === 0 ? 'GRATUIT' : `${deliveryPrice}€`}\n💳 Paiement: ${paymentText}\n\n💰 TOTAL: ${totalPrice}€`,
-        )}`;
+      if (miniApp?.openTelegramLink) {
         miniApp.openTelegramLink(telegramURL);
       } else if (typeof window !== 'undefined') {
-        const telegramURL = `https://t.me/Tangerine_212?text=${encodeURIComponent(
-          `🎉 NOUVELLE COMMANDE TANGERINE\n\n${message}\n\n📦 Sous-total: ${subtotal}€${promoText}\n🚚 Livraison ${DELIVERY_PRICES[deliveryCity].name}: ${deliveryPrice === 0 ? 'GRATUIT' : `${deliveryPrice}€`}\n💳 Paiement: ${paymentText}\n\n💰 TOTAL: ${totalPrice}€`,
-        )}`;
         window.open(telegramURL, '_blank');
       }
     } catch (error) {
@@ -1019,9 +1010,10 @@ const App = () => {
         )}
       </main>
 
-      {/* Horizontal Scroll Progress Bar */}
-      <div className="relative w-full h-1 bg-gray-800 mb-2">
-        <div className="h-full bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500" style={{ width: `${horizontalScrollProgress}%`, transition: 'width 0.15s ease-out' }} />
+      <div className="px-4 pb-2">
+        <div className="scroll-progress-track" aria-hidden="true">
+          <div className="scroll-progress-fill" style={{ width: `${horizontalScrollProgress}%` }} />
+        </div>
       </div>
 
       <nav className="fixed left-1/2 -translate-x-1/2 z-40 glass-dark rounded-full shadow-2xl flex items-center transition-all duration-300 bottom-nav">
