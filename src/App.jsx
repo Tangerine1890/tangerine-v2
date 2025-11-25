@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   miniApp as miniAppFeature,
   themeParams as themeParamsFeature,
@@ -14,6 +15,11 @@ import {
   viewport as viewportFeature,
 } from '@tma.js/sdk-react';
 import { ensureTangerineNamespace } from './lib/registry.js';
+import { useCartStore } from './store/cartStore.js';
+import { useUIStore } from './store/uiStore.js';
+import { useSettingsStore } from './store/settingsStore.js';
+import { useHaptic } from './hooks/useHaptic.js';
+import { fadeInUp, scaleIn } from './hooks/useAnimations.js';
 import {
   CATEGORIES,
   DELIVERY_PRICES,

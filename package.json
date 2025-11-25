@@ -10,10 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-  "@tma.js/sdk-react": "^3.0.8",
-  "react": "^19.2.0",
-  "react-dom": "^19.2.0"
-},
+    "@tma.js/sdk-react": "^3.0.8",
+    "framer-motion": "^12.23.24",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zustand": "^5.0.8"
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/react": "^19.2.2",
