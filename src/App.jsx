@@ -126,11 +126,28 @@ const App = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [homeScreenStatus, setHomeScreenStatus] = useState('unknown');
   const [isAppActive, setIsAppActive] = useState(true);
+  const [horizontalScrollProgress, setHorizontalScrollProgress] = useState(0);
 
   useEffect(() => {
     ensureTangerineNamespace();
     if (typeof window !== 'undefined') {
       window.videoManager = videoManagerRef.current;
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleHorizontalScroll = (e) => {
+      if (!e.target) return;
+      const scrollLeft = e.target.scrollLeft;
+      const scrollWidth = e.target.scrollWidth - e.target.clientWidth;
+      const scrolled = scrollWidth > 0 ? (scrollLeft / scrollWidth) * 100 : 0;
+      setHorizontalScrollProgress(scrolled);
+    };
+
+    const productContainer = document.querySelector('[data-product-scroll]');
+    if (productContainer) {
+      productContainer.addEventListener('scroll', handleHorizontalScroll, { passive: true });
+      return () => productContainer.removeEventListener('scroll', handleHorizontalScroll);
     }
   }, []);
 
@@ -862,6 +879,7 @@ const App = () => {
 
   return (
     <div className={bgClasses}>
+
       {welcomeRendered && (
         <div
           className={`welcome-toast ${showWelcome ? 'show' : ''}`}
@@ -904,6 +922,9 @@ const App = () => {
           </div>
         </div>
       )}
+
+      {/* Large top spacing */}
+      <div className="h-20" />
 
       <header className="relative z-10 max-w-7xl mx-auto px-4 pb-4 pt-12 md:pt-16 telegram-header">
         <div className="flex items-center justify-center gap-4 mb-6">
@@ -948,7 +969,7 @@ const App = () => {
             <p className={`${textSecondaryClasses} text-sm`}>Essayez une autre catégorie</p>
           </div>
         ) : (
-          <div className="flex gap-5 overflow-x-auto pb-6 snap-x scroll-smooth">
+          <div className="flex gap-5 overflow-x-auto pb-6 snap-x scroll-smooth" data-product-scroll>
             {productsToDisplay.map((product, index) => (
               <ProductCard
                 key={product.id}
@@ -965,6 +986,11 @@ const App = () => {
           </div>
         )}
       </main>
+
+      {/* Horizontal Scroll Progress Bar */}
+      <div className="fixed left-1/2 -translate-x-1/2 z-39 w-32 h-0.5 bg-gray-700 rounded-full bottom-20 shadow-lg">
+        <div className="h-full bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500 rounded-full" style={{ width: `${horizontalScrollProgress}%`, transition: 'width 0.1s ease-out' }} />
+      </div>
 
       <nav className="fixed left-1/2 -translate-x-1/2 z-40 glass-dark rounded-full shadow-2xl flex items-center transition-all duration-300 bottom-nav">
         <button
