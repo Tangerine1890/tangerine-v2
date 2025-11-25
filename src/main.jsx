@@ -50,28 +50,28 @@ if (typeof window !== 'undefined' && !window.Telegram) {
         }
       },
       HapticFeedback: {
-        impactOccurred: () => {},
-        notificationOccurred: () => {},
-        selectionChanged: () => {},
+        impactOccurred: () => { },
+        notificationOccurred: () => { },
+        selectionChanged: () => { },
       },
       MainButton: {
-        onClick: () => {},
-        offClick: () => {},
-        show: () => {},
-        hide: () => {},
-        enable: () => {},
-        disable: () => {},
-        setText: () => {},
-        setParams: () => {},
+        onClick: () => { },
+        offClick: () => { },
+        show: () => { },
+        hide: () => { },
+        enable: () => { },
+        disable: () => { },
+        setText: () => { },
+        setParams: () => { },
       },
       BackButton: {
-        onClick: () => {},
-        offClick: () => {},
-        show: () => {},
-        hide: () => {},
+        onClick: () => { },
+        offClick: () => { },
+        show: () => { },
+        hide: () => { },
       },
-      onEvent: () => {},
-      offEvent: () => {},
+      onEvent: () => { },
+      offEvent: () => { },
       safeAreaInset: { top: 0, bottom: 0, left: 0, right: 0 },
       contentSafeAreaInset: { top: 0, bottom: 0, left: 0, right: 0 },
       CloudStorage: {
@@ -80,8 +80,8 @@ if (typeof window !== 'undefined' && !window.Telegram) {
         removeItem: (key, callback) => callback(null),
         getKeys: (callback) => callback(null, []),
       },
-      sendData: () => {},
-      close: () => {},
+      sendData: () => { },
+      close: () => { },
       openLink: (url) => {
         if (typeof window !== 'undefined') {
           window.open(url, '_blank');
@@ -92,8 +92,8 @@ if (typeof window !== 'undefined' && !window.Telegram) {
           window.open(url, '_blank');
         }
       },
-      openInvoice: () => {},
-      showPopup: () => {},
+      openInvoice: () => { },
+      showPopup: () => { },
       showAlert: (message) => {
         if (typeof window !== 'undefined') {
           alert(message);
@@ -108,8 +108,12 @@ if (typeof window !== 'undefined' && !window.Telegram) {
   };
 }
 
+import { SDKProvider } from '@tma.js/sdk-react';
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <SDKProvider acceptCustomStyles debug>
+      <App />
+    </SDKProvider>
   </StrictMode>,
 );
