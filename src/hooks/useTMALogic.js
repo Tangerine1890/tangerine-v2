@@ -1,5 +1,10 @@
 import { useEffect, useCallback, useState } from 'react';
-import { miniApp as miniAppFeature } from '@tma.js/sdk-react';
+import {
+  miniApp as miniAppFeature,
+  themeParams as themeParamsFeature,
+  viewport as viewportFeature,
+  useSignal
+} from '@tma.js/sdk-react';
 import { useCartStore } from '../store/cartStore.js';
 import { useUIStore } from '../store/uiStore.js';
 import { useHaptic } from './useHaptic.js';
@@ -7,10 +12,51 @@ import { useHaptic } from './useHaptic.js';
 export const useTMALogic = () => {
   const miniApp = miniAppFeature;
   const { isCartOpen, setCartOpen, cart } = useCartStore();
-  const { viewerOpen, selectedProduct, isContactOpen, showConfirmation } = useUIStore();
+  const {
+    viewerOpen, setViewer,
+    selectedProduct, setSelectedProduct,
+    isContactOpen, setIsContactOpen,
+    showConfirmation, setShowConfirmation
+  } = useUIStore();
   const { light } = useHaptic();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [homeScreenStatus, setHomeScreenStatus] = useState('unknown');
+
+  // Signals
+  const themeParams = useSignal(themeParamsFeature.state);
+  const viewport = useSignal(viewportFeature.state);
+
+  // Update CSS Variables for Theme
+  useEffect(() => {
+    if (!themeParams) return;
+    const root = document.documentElement;
+    const themeEntries = [
+      ['--tg-theme-bg-color', themeParams.backgroundColor],
+      ['--tg-theme-text-color', themeParams.textColor],
+      ['--tg-theme-hint-color', themeParams.hintColor],
+      ['--tg-theme-link-color', themeParams.linkColor],
+      ['--tg-theme-button-color', themeParams.buttonColor],
+      ['--tg-theme-button-text-color', themeParams.buttonTextColor],
+      ['--tg-theme-secondary-bg-color', themeParams.secondaryBackgroundColor],
+    ];
+    themeEntries.forEach(([key, value]) => {
+      if (value) {
+        root.style.setProperty(key, value);
+      }
+    });
+  }, [themeParams]);
+
+  // Update CSS Variables for Viewport
+  useEffect(() => {
+    if (!viewport) return;
+    const root = document.documentElement;
+    if (viewport.height) {
+      root.style.setProperty('--tg-viewport-height', `${viewport.height}px`);
+    }
+    if (viewport.stableHeight) {
+      root.style.setProperty('--tg-viewport-stable-height', `${viewport.stableHeight}px`);
+    }
+  }, [viewport]);
 
   // Initialize TMA
   useEffect(() => {
@@ -24,6 +70,20 @@ export const useTMALogic = () => {
     } catch (error) {
       console.warn('TMA initialization warning:', error);
     }
+
+    // Safe Area
+    const safeAreaHandler = () => {
+      const root = document.documentElement;
+      const safeArea = miniApp.safeAreaInset;
+      if (!safeArea) return;
+      root.style.setProperty('--tg-safe-area-top', `${safeArea.top ?? 0}px`);
+      root.style.setProperty('--tg-safe-area-bottom', `${safeArea.bottom ?? 0}px`);
+      root.style.setProperty('--tg-safe-area-left', `${safeArea.left ?? 0}px`);
+      root.style.setProperty('--tg-safe-area-right', `${safeArea.right ?? 0}px`);
+    };
+
+    miniApp.onEvent?.('safeAreaChanged', safeAreaHandler);
+    safeAreaHandler();
 
     try {
       const onFullscreen = () => setIsFullscreen(Boolean(miniApp.isFullscreen));
@@ -39,6 +99,7 @@ export const useTMALogic = () => {
       return () => {
         miniApp.offEvent?.('fullscreenChanged', onFullscreen);
         miniApp.offEvent?.('homeScreenAdded', onHomeScreenAdded);
+        miniApp.offEvent?.('safeAreaChanged', safeAreaHandler);
       };
     } catch (error) {
       console.warn('TMA event registration warning:', error);
@@ -75,7 +136,25 @@ export const useTMALogic = () => {
 
     const handleBack = () => {
       light();
-      // Logic handled by UI store
+      if (viewerOpen) {
+        setViewer(false, null, 0);
+        return;
+      }
+      if (selectedProduct) {
+        setSelectedProduct(null);
+        return;
+      }
+      if (isContactOpen) {
+        setIsContactOpen(false);
+        return;
+      }
+      if (showConfirmation) {
+        setShowConfirmation(false);
+        return;
+      }
+      if (isCartOpen) {
+        setCartOpen(false);
+      }
     };
 
     miniApp.BackButton.onClick(handleBack);
