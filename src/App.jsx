@@ -90,6 +90,39 @@ const App = () => {
   const cartButtonRef = useRef(null);
   const auroraRef = useRef(null);
   const videoManagerRef = useRef(getVideoManager());
+
+  const markWelcomeSeen = useCallback(() => {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(WELCOME_STORAGE_KEY, '1');
+      }
+    } catch (error) {
+      /* ignore */
+    }
+  }, []);
+
+  const clearWelcomeTimers = useCallback(() => {
+    if (welcomeTimerRef.current) {
+      clearTimeout(welcomeTimerRef.current);
+      welcomeTimerRef.current = null;
+    }
+    if (welcomeUnmountRef.current) {
+      clearTimeout(welcomeUnmountRef.current);
+      welcomeUnmountRef.current = null;
+    }
+  }, []);
+
+  const handleDismissWelcome = useCallback(
+    (source = 'manual') => {
+      setShowWelcome(false);
+      markWelcomeSeen();
+      if (source === 'manual') {
+        clearWelcomeTimers();
+      }
+    },
+    [clearWelcomeTimers, markWelcomeSeen],
+  );
+
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [homeScreenStatus, setHomeScreenStatus] = useState('unknown');
   const [isAppActive, setIsAppActive] = useState(true);
