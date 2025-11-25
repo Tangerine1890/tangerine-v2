@@ -132,9 +132,19 @@ export const MainLayout = ({
             {/* Main Content */}
             {children}
 
-            <div className="px-4 pb-2">
-                <div className="scroll-progress-track" aria-hidden="true">
-                    <div className="scroll-progress-fill" style={{ width: `${horizontalScrollProgress}%` }} />
+            {/* Horizontal Scroll Progress Bar */}
+            <div className="fixed left-1/2 -translate-x-1/2 z-30 w-full max-w-md px-8" style={{ bottom: 'calc(max(0.25rem, calc(env(safe-area-inset-bottom, 0px) - 0.8rem)) + 5.5rem)' }}>
+                <div className="relative h-1.5 rounded-full overflow-hidden glass-dark border border-white/5 shadow-lg">
+                    <div
+                        className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 transition-all duration-300 ease-out shadow-[0_0_12px_rgba(249,115,22,0.5)]"
+                        style={{ width: `${horizontalScrollProgress}%` }}
+                        aria-hidden="true"
+                    />
+                    <div
+                        className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-orange-400/30 via-pink-400/30 to-purple-400/30 animate-pulse"
+                        style={{ width: `${horizontalScrollProgress}%` }}
+                        aria-hidden="true"
+                    />
                 </div>
             </div>
 
