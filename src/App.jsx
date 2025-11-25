@@ -54,7 +54,7 @@ const App = () => {
     isContactOpen, setIsContactOpen,
     showConfirmation, setShowConfirmation,
     viewerOpen, viewerProduct, viewerStartIndex, setViewer,
-    notification, hideNotification,
+    notification, showNotification, hideNotification,
     showWelcome, setShowWelcome,
     welcomeRendered, setWelcomeRendered,
     addAnimation
