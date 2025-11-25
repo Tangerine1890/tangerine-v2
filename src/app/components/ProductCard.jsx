@@ -304,7 +304,7 @@ const ProductCardComponent = memo(({
             <button
               key={qty}
               onClick={(event) => handleQuickAdd(qty, event)}
-              className="flex-1 quantity-button glass-cta font-semibold px-6 py-4 rounded-full text-base leading-tight"
+              className="flex-1 quantity-button glass-cta font-semibold px-6 py-4 rounded-xl text-base leading-tight"
             >
               {qty}g
               <br />

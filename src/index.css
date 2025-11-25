@@ -186,7 +186,7 @@ body {
   position: relative;
   overflow: hidden;
   transition: transform 0.22s ease;
-  border-radius: 9999px;
+  border-radius: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -219,16 +219,16 @@ body {
   position: fixed;
   z-index: 9999;
   pointer-events: none;
-  background: rgba(15, 23, 42, 0.72);
+  background: rgba(15, 23, 42, 0.85);
   color: #fef9f5;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 2.5rem;
   letter-spacing: 0.04em;
-  padding: 0.55rem 1.1rem;
+  padding: 0.75rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.42);
-  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.5), 0 0 30px rgba(249, 115, 22, 0.4);
+  backdrop-filter: blur(12px);
   transform: translate(-50%, -50%) scale(0.9);
   opacity: 0;
 }
