@@ -7,9 +7,9 @@ export const CategoryList = ({ selectedCategory, onCategoryChange, scrollRef }) 
                 <button
                     key={category.id}
                     onClick={() => onCategoryChange(category.id)}
-                    className={`flex-shrink-0 px-6 py-3 rounded-2xl font-bold transition-all ${selectedCategory === category.id
-                            ? `bg-gradient-to-r ${category.gradient} text-white scale-105 glow`
-                            : `glass opacity-70 hover:opacity-100 hover:scale-105`
+                    className={`flex-shrink-0 px-5 py-2.5 rounded-xl font-bold transition-all ${selectedCategory === category.id
+                        ? `bg-gradient-to-r ${category.gradient} text-white scale-105 glow`
+                        : `glass opacity-70 hover:opacity-100 hover:scale-105`
                         }`}
                 >
                     <span className="mr-2">{category.emoji}</span>

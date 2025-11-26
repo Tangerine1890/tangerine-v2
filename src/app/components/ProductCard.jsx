@@ -200,7 +200,7 @@ const ProductCardComponent = memo(({
   return (
     <div
       ref={cardRef}
-      className={`snap-center flex-shrink-0 w-80 glass rounded-3xl p-5 card-hover relative overflow-hidden group ${videoState === 'loaded' && (isVisible || isInitiallyVisible) ? 'card-playing' : ''
+      className={`snap-center flex-shrink-0 w-80 glass rounded-3xl p-5 card-hover relative overflow-hidden group h-[520px] flex flex-col ${videoState === 'loaded' && (isVisible || isInitiallyVisible) ? 'card-playing' : ''
         }`}
     >
       <div className="card-halo" aria-hidden="true" />
@@ -216,7 +216,7 @@ const ProductCardComponent = memo(({
           onViewDetails(product);
           trackEvent('product_detail_view', { product: product.name });
         }}
-        className="relative h-60 rounded-2xl overflow-hidden bg-black/30 mb-4 cursor-pointer"
+        className="relative h-[360px] rounded-2xl overflow-hidden bg-black/30 mb-4 cursor-pointer flex-shrink-0"
         role="button"
         tabIndex={0}
         onKeyDown={(event) => event.key === 'Enter' && onViewDetails(product)}
@@ -274,8 +274,8 @@ const ProductCardComponent = memo(({
           </span>
         </div>
       </div>
-      <div className="mb-4">
-        <div className="flex items-center gap-2 mb-2">
+      <div className="flex-1 flex flex-col">
+        <div className="flex items-center gap-2 mb-3">
           <span className="text-3xl">{product.emoji}</span>
           <h3 className="text-white font-bold text-lg flex-1">{product.name}</h3>
           <span
@@ -287,7 +287,6 @@ const ProductCardComponent = memo(({
             {isAccessory ? 'Prix à définir' : `${PRICES[product.category]}€/g`}
           </span>
         </div>
-        <p className="text-white/60 text-sm line-clamp-2">{product.desc}</p>
       </div>
 
       <div className="flex gap-3">
