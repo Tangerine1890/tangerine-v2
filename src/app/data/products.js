@@ -151,7 +151,7 @@ export const PRODUCTS = [
     media: ['https://file.garden/aRCOOh-cGER2BR_t/D%C3%A9couverte.mp4'],
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/D%C3%A9couverte.mp4'],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/D%C3%A9couverte.mp4',
-    desc: 'Ce pack contient : 7.5g Fresh Frozen + 7.5g Double Static. Profitez de cette sélection spéciale CAN 2025.',
+    desc: 'Profitez de cette sélection spéciale CAN 2025.',
     details: [
       '7.5g Fresh Frozen',
       '7.5g Double Static',
@@ -169,7 +169,7 @@ export const PRODUCTS = [
     media: ['https://file.garden/aRCOOh-cGER2BR_t/Supporters'],
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/Supporters'],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/Supporters',
-    desc: 'Ce pack contient : 7.5g Fresh Frozen + 7.5g Double Static + 5g WPFF. La sélection idéale pour les supporters.',
+    desc: 'Profitez de cette sélection spéciale CAN 2025.',
     details: [
       '7.5g Fresh Frozen',
       '7.5g Double Static',
@@ -187,11 +187,10 @@ export const PRODUCTS = [
     media: ['https://file.garden/aRCOOh-cGER2BR_t/MVP.mp4'],
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/MVP.mp4'],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/MVP.mp4',
-    desc: 'Ce pack contient : 20g Double Static + 10g WPFF. Le choix ultime pour les connaisseurs.',
+    desc: 'Profitez de cette sélection spéciale CAN 2025.',
     details: [
       '20g Double Static (4 variétés)',
-      '10g WPFF',
-      'Expérience Complète'
+      '10g WPFF'
     ]
   }
 ];
