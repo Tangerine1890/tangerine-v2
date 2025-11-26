@@ -119,7 +119,9 @@ export const PRODUCTS = [
     category: 'accessoires',
     name: 'TerpWrap',
     emoji: '🟠',
-    media: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG'],
+    catalogOnly: true,
+    media: ['/videos/terpwrap.mp4'],
+    mediaSources: withMediaSources(['/videos/terpwrap.mp4']),
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG'],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG',
     desc: 'Protégez le drip. Préservez les terpènes. Emballage premium conçu pour garder vos concentrés purs, puissants et riches en terpènes.'
@@ -129,7 +131,9 @@ export const PRODUCTS = [
     category: 'accessoires',
     name: 'Wipes',
     emoji: '🧼',
-    media: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG'],
+    catalogOnly: true,
+    media: ['/videos/whype.mp4'],
+    mediaSources: withMediaSources(['/videos/whype.mp4']),
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG'],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG',
     desc: 'Fini les soucis collants. Élimine facilement les traces 🍯 ou 🍫 pour garder vos doigts impeccables.'

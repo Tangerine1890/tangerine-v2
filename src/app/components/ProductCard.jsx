@@ -282,20 +282,22 @@ const ProductCardComponent = memo(({
         <div className="flex items-center gap-2">
           <span className="text-3xl">{product.emoji}</span>
           <h3 className="text-white font-bold text-lg flex-1 truncate">{product.name}</h3>
-          <span
-            className={`font-bold text-xs px-2 py-1 rounded-lg ${isAccessory
-              ? 'bg-white/10 text-white/80 border border-white/10'
-              : product.isPack
-                ? 'text-can-gold bg-can-gold/20 border border-can-gold/30'
-                : 'text-emerald-300 bg-emerald-500/20'
-              }`}
-          >
-            {isAccessory ? 'Prix à définir' : product.isPack ? `${product.price}€` : `${PRICES[product.category]}€/g`}
-          </span>
+          {!product.catalogOnly && (
+            <span
+              className={`font-bold text-xs px-2 py-1 rounded-lg ${isAccessory
+                ? 'bg-white/10 text-white/80 border border-white/10'
+                : product.isPack
+                  ? 'text-can-gold bg-can-gold/20 border border-can-gold/30'
+                  : 'text-emerald-300 bg-emerald-500/20'
+                }`}
+            >
+              {isAccessory ? 'Prix à définir' : product.isPack ? `${product.price}€` : `${PRICES[product.category]}€/g`}
+            </span>
+          )}
         </div>
 
         <div className="flex gap-3">
-          {isAccessory ? (
+          {isAccessory || product.catalogOnly ? (
             <button
               onClick={handleAccessoryCTA}
               className="w-full glass-cta font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2"
