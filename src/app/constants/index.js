@@ -1,7 +1,7 @@
 export const PRICES_PER_CATEGORY = {
   wpff: 18,
   doublestatic: 14,
-  freshfrozen: 8,
+  freshfrozen: 6,
   accessoires: 0,
 };
 
