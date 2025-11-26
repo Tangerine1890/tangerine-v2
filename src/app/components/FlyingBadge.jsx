@@ -12,8 +12,9 @@ export const FlyingBadge = () => {
                     initial={{
                         left: anim.startX,
                         top: anim.startY,
-                        opacity: 0.05,
-                        scale: 0.7,
+                        opacity: 1,
+                        scale: 1,
+                        rotate: 0,
                         position: 'fixed',
                         zIndex: 9999,
                         pointerEvents: 'none'
@@ -21,13 +22,15 @@ export const FlyingBadge = () => {
                     animate={{
                         left: [anim.startX, anim.midX, anim.endX],
                         top: [anim.startY, anim.midY, anim.endY],
-                        opacity: [0.05, 0.95, 0.7, 0],
-                        scale: [0.7, 1.15, 1, 0.6]
+                        opacity: [1, 1, 0.8, 0],
+                        scale: [1, 0.6, 0.4],
+                        rotate: [0, 15, 20]
                     }}
                     transition={{
-                        duration: 1.08,
-                        ease: [0.25, 0.85, 0.25, 1],
-                        times: [0, 0.28, 0.68, 1]
+                        duration: 0.8,
+                        ease: [0.34, 1.56, 0.64, 1], // easeOutBack for satisfying bounce
+                        times: [0, 0.5, 1],
+                        opacity: { times: [0, 0.6, 0.85, 1] }
                     }}
                     onAnimationComplete={() => removeAnimation(anim.id)}
                     className="flying-badge"
