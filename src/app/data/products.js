@@ -189,7 +189,7 @@ export const PRODUCTS = [
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/MVP.mp4',
     desc: 'Profitez de cette sélection spéciale CAN 2025.',
     details: [
-      '20g Double Static (4 variétés)',
+      '20g Double Static (4 strains)',
       '10g WPFF'
     ]
   }

@@ -97,12 +97,15 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
 
   const handleAddToCart = useCallback(() => {
     if (!product) return;
-    const price = PRICES[product.category] * selectedQuantity;
-    onAddToCart(product, selectedQuantity, price);
+    // For packs, always add 1 unit. For other products, use selectedQuantity.
+    const quantityToAdd = product.isPack ? 1 : selectedQuantity;
+    const priceToAdd = product.isPack ? product.price : (PRICES[product.category] * quantityToAdd);
+
+    onAddToCart(product, quantityToAdd, priceToAdd);
     trackEvent('add_to_cart_from_detail', {
       product: product.name,
-      quantity: selectedQuantity,
-      price,
+      quantity: quantityToAdd,
+      price: priceToAdd,
     });
     onClose();
   }, [onAddToCart, onClose, product, selectedQuantity]);
