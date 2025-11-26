@@ -139,58 +139,41 @@ export const PRODUCTS = [
     desc: 'Fini les soucis collants. Élimine facilement les traces 🍯 ou 🍫 pour garder vos doigts impeccables.'
   },
   // --- PACKS CAN 2025 ---
+  // --- PACKS CAN 2025 ---
   {
     id: 'pack_decouverte',
     category: 'packs_can',
-    name: 'Pack Découverte CAN',
-    emoji: '🍇',
-    price: 285,
+    name: 'Pack Découverte',
+    emoji: '🎁',
+    price: 130,
     isPack: true,
-    badge: 'CAN 2025 🏆',
-    media: ['https://file.garden/aRCOOh-cGER2BR_t/pack_decouverte_can_retry_1764173714326.png'],
-    posters: ['https://file.garden/aRCOOh-cGER2BR_t/pack_decouverte_can_retry_1764173714326.png'],
-    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/pack_decouverte_can_retry_1764173714326.png',
-    desc: '30g de pur plaisir : 10g Fresh Frozen + 15g Double Static + 5g WPFF. Économisez 100€ !',
+    badge: 'NOUVEAU ✨',
+    media: ['https://placehold.co/600x400/064e3b/ffffff?text=Pack+Decouverte'],
+    posters: ['https://placehold.co/600x400/064e3b/ffffff?text=Pack+Decouverte'],
+    thumbnail: 'https://placehold.co/600x400/064e3b/ffffff?text=Pack+Decouverte',
+    desc: 'Ce pack contient : 7.5g Fresh Frozen + 7.5g Double Static. Profitez de cette sélection spéciale CAN 2025.',
     details: [
-      '10g Fresh Frozen (Grape Pie)',
-      '15g Double Static (Mix 3 variétés)',
-      '5g WPFF (Tropicali/Kush Mints)'
+      '7.5g Fresh Frozen',
+      '7.5g Double Static',
+      'Sélection Variée'
     ]
   },
   {
     id: 'pack_supporter',
     category: 'packs_can',
-    name: 'Pack Supporter CAN',
+    name: 'Pack Supporter',
     emoji: '⚽',
-    price: 300,
+    price: 200,
     isPack: true,
-    badge: 'BEST SELLER 🔥',
-    media: ['https://file.garden/aRCOOh-cGER2BR_t/pack_supporter_can_1764173643919.png'],
-    posters: ['https://file.garden/aRCOOh-cGER2BR_t/pack_supporter_can_1764173643919.png'],
-    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/pack_supporter_can_1764173643919.png',
-    desc: '30g de Double Static Premium. La valeur sûre pour les vrais fans. Économisez 120€ !',
+    badge: 'POPULAIRE 🔥',
+    media: ['https://placehold.co/600x400/064e3b/ffffff?text=Pack+Supporter'],
+    posters: ['https://placehold.co/600x400/064e3b/ffffff?text=Pack+Supporter'],
+    thumbnail: 'https://placehold.co/600x400/064e3b/ffffff?text=Pack+Supporter',
+    desc: 'Ce pack contient : 7.5g Fresh Frozen + 7.5g Double Static + 5g WPFF. La sélection idéale pour les supporters.',
     details: [
-      '30g Double Static (3 variétés x 10g)',
-      'Qualité Premium Garantie',
-      'Idéal pour partager'
-    ]
-  },
-  {
-    id: 'pack_equipe_type',
-    category: 'packs_can',
-    name: 'Pack Équipe Type',
-    emoji: '🦁',
-    price: 470,
-    isPack: true,
-    badge: 'GROS FORMAT 📦',
-    media: ['https://file.garden/aRCOOh-cGER2BR_t/pack_equipe_type_1764173662433.png'],
-    posters: ['https://file.garden/aRCOOh-cGER2BR_t/pack_equipe_type_1764173662433.png'],
-    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/pack_equipe_type_1764173662433.png',
-    desc: '50g pour tenir toute la compétition. Le choix des champions. Économisez 160€ !',
-    details: [
-      '20g Fresh Frozen',
-      '20g Double Static',
-      '10g WPFF'
+      '7.5g Fresh Frozen',
+      '7.5g Double Static',
+      '5g WPFF'
     ]
   },
   {
@@ -198,17 +181,17 @@ export const PRODUCTS = [
     category: 'packs_can',
     name: 'Pack MVP',
     emoji: '🏆',
-    price: 260,
+    price: 360,
     isPack: true,
-    badge: 'LUXE 💎',
-    media: ['https://file.garden/aRCOOh-cGER2BR_t/pack_mvp_can_1764173683360.png'],
-    posters: ['https://file.garden/aRCOOh-cGER2BR_t/pack_mvp_can_1764173683360.png'],
-    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/pack_mvp_can_1764173683360.png',
-    desc: '20g de WPFF (Whole Plant Fresh Frozen). La crème de la crème. Économisez 100€ !',
+    badge: 'PREMIUM 💎',
+    media: ['https://placehold.co/600x400/064e3b/ffffff?text=Pack+MVP'],
+    posters: ['https://placehold.co/600x400/064e3b/ffffff?text=Pack+MVP'],
+    thumbnail: 'https://placehold.co/600x400/064e3b/ffffff?text=Pack+MVP',
+    desc: 'Ce pack contient : 20g Double Static + 10g WPFF. Le choix ultime pour les connaisseurs.',
     details: [
-      '20g WPFF (Tropicali + Kush Mints)',
-      'Extraction sans solvant',
-      'Terpènes explosifs'
+      '20g Double Static (4 variétés)',
+      '10g WPFF',
+      'Expérience Complète'
     ]
   }
 ];

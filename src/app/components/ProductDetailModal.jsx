@@ -312,7 +312,15 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                 </div>
               </div>
             </div>
-          ) : !isAccessory && !product.catalogOnly ? (
+          ) : product.isPack ? (
+            <button
+              onClick={handleAddToCart}
+              className="w-full glass-cta font-semibold py-3 rounded-xl flex items-center justify-center gap-2 mt-4"
+            >
+              <span>🛒</span>
+              <span>Ajouter au panier ({product.price}€)</span>
+            </button>
+          ) : !product.catalogOnly ? (
             <>
               <div className="glass p-3 rounded-xl flex items-center justify-between">
                 <div className="flex items-center gap-2">
