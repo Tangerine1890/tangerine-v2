@@ -134,28 +134,28 @@ export const MainLayout = ({
 
 
 
-            {/* Fixed Bottom Navigation Bar */}
-            <nav className="fixed bottom-0 left-0 right-0 z-50 glass-dark border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] flex items-center justify-around px-2 pb-[env(safe-area-inset-bottom,8px)] pt-2 transition-all duration-300 bottom-nav rounded-t-3xl h-[70px]">
+            {/* Fixed Bottom Navigation Bar - Premium Redesign */}
+            <nav className="fixed bottom-0 left-0 right-0 z-50 glass-dark border-t border-white/5 shadow-[0_-8px_32px_rgba(0,0,0,0.6)] flex items-center justify-around px-6 pb-[env(safe-area-inset-bottom,16px)] pt-3 transition-all duration-300 bottom-nav rounded-t-[28px] h-[72px]">
                 <button
                     onClick={() => handleCategoryChange('all')}
-                    className={`${textClasses} flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all nav-icon-btn`}
+                    className={`${textClasses} flex flex-col items-center gap-1 p-2.5 rounded-2xl hover:bg-white/5 active:scale-95 transition-all`}
                     title="Accueil"
                     aria-label="Accueil"
                 >
-                    <span aria-hidden="true" className="text-xl">🏠</span>
-                    <span className="text-[9px] font-medium opacity-80">Accueil</span>
+                    <span aria-hidden="true" className="text-2xl">🏠</span>
+                    <span className="text-[10px] font-semibold opacity-70">Accueil</span>
                 </button>
 
                 <button
                     onClick={() => setCartOpen(true)}
                     ref={cartButtonRef}
-                    className="relative flex flex-col items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-[0_8px_24px_rgba(249,115,22,0.4)] hover:scale-105 active:scale-95 transition-all -translate-y-4 border-4 border-[#05090b]"
+                    className="relative flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 text-white shadow-[0_12px_40px_rgba(249,115,22,0.5),0_0_0_4px_rgba(249,115,22,0.1)] hover:scale-105 active:scale-95 transition-all"
                     aria-label="Panier"
                 >
                     <div className="relative">
-                        <span aria-hidden="true" className="text-xl">🛒</span>
+                        <span aria-hidden="true" className="text-3xl">🛒</span>
                         {cart.length > 0 && (
-                            <span className="absolute -top-2 -right-2 bg-white text-orange-600 text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-bold border border-orange-100 animate-bounce-subtle">
+                            <span className="absolute -top-3 -right-3 bg-white text-orange-600 text-[11px] min-w-[22px] h-[22px] rounded-full flex items-center justify-center font-bold shadow-lg animate-bounce-subtle">
                                 {cart.length}
                             </span>
                         )}
@@ -164,12 +164,12 @@ export const MainLayout = ({
 
                 <button
                     onClick={() => setIsContactOpen(true)}
-                    className={`${textClasses} flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all nav-icon-btn`}
+                    className={`${textClasses} flex flex-col items-center gap-1 p-2.5 rounded-2xl hover:bg-white/5 active:scale-95 transition-all`}
                     title="Contact"
                     aria-label="Contact"
                 >
-                    <span aria-hidden="true" className="text-xl">💬</span>
-                    <span className="text-[9px] font-medium opacity-80">Contact</span>
+                    <span aria-hidden="true" className="text-2xl">💬</span>
+                    <span className="text-[10px] font-semibold opacity-70">Contact</span>
                 </button>
             </nav>
 
