@@ -298,10 +298,25 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
         </div>
 
         <div className="p-5 space-y-5">
-          <div>
-            <h3 className="text-white font-bold text-xl mb-3">📝 Description</h3>
-            <p className="text-white/90 leading-relaxed text-base">{product.desc}</p>
-          </div>
+          {product.isPack && product.details ? (
+            <div className="space-y-4">
+              <h3 className="text-white font-bold text-xl mb-3">📦 Contenu du Pack</h3>
+              <div className="glass p-4 rounded-2xl space-y-3">
+                {product.details.map((detail, idx) => (
+                  <div key={idx} className="flex items-center gap-3 p-2 rounded-xl bg-white/5 border border-white/10">
+                    <span className="text-xl">✨</span>
+                    <span className="text-white font-semibold text-base">{detail}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-white/60 text-sm italic px-2">{product.desc}</p>
+            </div>
+          ) : (
+            <div>
+              <h3 className="text-white font-bold text-xl mb-3">📝 Description</h3>
+              <p className="text-white/90 leading-relaxed text-base">{product.desc}</p>
+            </div>
+          )}
 
           {isAccessory && !product.catalogOnly ? (
             <div className="space-y-4">
