@@ -108,13 +108,22 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
   }, [onAddToCart, onClose, product, selectedQuantity]);
 
   const handleQuantityInput = (event) => {
-    const value = parseInt(event.target.value, 10);
-    setSelectedQuantity(Math.max(MIN_QUANTITY, Number.isNaN(value) ? MIN_QUANTITY : value));
+    const value = event.target.value;
+    // Allow empty string for typing
+    if (value === '') {
+      setSelectedQuantity('');
+      return;
+    }
+    const numValue = parseInt(value, 10);
+    if (!Number.isNaN(numValue)) {
+      setSelectedQuantity(numValue);
+    }
   };
 
-  const price = useMemo(() => (
-    product ? PRICES[product.category] * selectedQuantity : 0
-  ), [product, selectedQuantity]);
+  const price = useMemo(() => {
+    const qty = selectedQuantity === '' ? 0 : selectedQuantity;
+    return product ? PRICES[product.category] * Math.max(MIN_QUANTITY, qty) : 0;
+  }, [product, selectedQuantity]);
 
   if (!product) return null;
 
@@ -127,13 +136,13 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
       aria-labelledby="product-detail-title"
     >
       <div
-        className="glass-dark rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="glass-dark rounded-3xl max-w-2xl w-full max-h-[95vh] overflow-y-auto"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="relative">
           <div
             onClick={() => openViewer && openViewer(product, selectedMediaIndex)}
-            className={`cursor-zoom-in relative w-full ${product.catalogOnly ? 'h-96' : 'h-56'} rounded-t-3xl overflow-hidden`}
+            className={`cursor-zoom-in relative w-full ${product.catalogOnly ? 'h-96' : 'h-64'} rounded-t-3xl overflow-hidden`}
             role="button"
             tabIndex={0}
           >
@@ -147,7 +156,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                 <video
                   key={`main-${product.id}-${selectedMediaIndex}`}
                   ref={videoRef}
-                  className={`relative w-full ${product.catalogOnly ? 'h-96' : 'h-56'} object-cover video-smooth`}
+                  className={`relative w-full ${product.catalogOnly ? 'h-96' : 'h-64'} object-cover video-smooth`}
                   loop
                   muted
                   playsInline
@@ -191,7 +200,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                 src={product.thumbnail}
                 alt={product.name}
                 loading="lazy"
-                className={`w-full ${product.catalogOnly ? 'h-96' : 'h-56'} object-cover`}
+                className={`w-full ${product.catalogOnly ? 'h-96' : 'h-64'} object-cover`}
               />
             )}
 
@@ -305,10 +314,10 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
             </div>
           ) : !isAccessory && !product.catalogOnly ? (
             <>
-              <div className="glass p-4 rounded-2xl flex items-center justify-between">
-                <div>
-                  <p className="text-white/60 text-sm mb-1">Prix unitaire</p>
-                  <p className="gradient-text font-black text-2xl">{PRICES[product.category]}€/g</p>
+              <div className="glass p-3 rounded-xl flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <p className="text-white/60 text-xs">Prix unitaire</p>
+                  <p className="gradient-text font-bold text-lg">{PRICES[product.category]}€/g</p>
                 </div>
               </div>
 
@@ -321,12 +330,14 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                     min={MIN_QUANTITY}
                     value={selectedQuantity}
                     onChange={handleQuantityInput}
-                    className="flex-1 glass text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-emerald-400 text-center font-bold"
+                    onBlur={() => {
+                      if (selectedQuantity === '' || selectedQuantity < MIN_QUANTITY) {
+                        setSelectedQuantity(MIN_QUANTITY);
+                      }
+                    }}
+                    className="w-full glass text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-emerald-400 text-center font-bold text-lg"
                     placeholder={`Min. ${MIN_QUANTITY}g`}
                   />
-                  <div className="glass px-6 py-3 rounded-xl flex items-center">
-                    <span className="text-white font-bold text-xl">{price}€</span>
-                  </div>
                 </div>
               </div>
 
