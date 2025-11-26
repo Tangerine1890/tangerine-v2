@@ -17,6 +17,9 @@ export const useDataLoad = () => {
 
   useEffect(() => {
     const loadData = async () => {
+      const startTime = Date.now();
+      const MIN_LOADING_TIME = 2500; // 2.5 seconds minimum display
+
       try {
         const [
           savedCart,
@@ -38,41 +41,29 @@ export const useDataLoad = () => {
 
         // Populate stores
         setCart(savedCart);
-        setDeliveryCity(savedCity);
-        setPaymentMethod(savedPayment);
-        setAppliedPromo(savedPromo);
-        setWishlist(savedWishlist);
-        setOrderHistory(savedOrderHistory);
+        if (savedCity) setDeliveryCity(savedCity);
+        if (savedPayment) setPaymentMethod(savedPayment);
+        if (savedPromo) setAppliedPromo(savedPromo);
+        if (savedWishlist) setWishlist(savedWishlist);
+        if (savedOrderHistory) setOrderHistory(savedOrderHistory);
+        if (savedTheme) setTheme(savedTheme);
 
-        if (savedTheme) {
-          setTheme(savedTheme);
-          if (typeof document !== 'undefined') {
-            document.documentElement.className = savedTheme === 'light' ? 'theme-light' : '';
-          }
-        } else if (typeof document !== 'undefined') {
-          document.documentElement.className = '';
+        // Detect low data mode
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        const isSlowConnection = connection ? (connection.saveData || (connection.effectiveType || '').toLowerCase().includes('2g')) : false;
+        if (isSlowConnection) {
+          document.documentElement.classList.add('low-data-mode');
         }
-
-        // Low data mode check
-        try {
-          const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-          const isLowData = connection ? (connection.saveData || !((connection.effectiveType || '').toLowerCase().includes('4g'))) : false;
-
-          if (typeof document !== 'undefined') {
-            if (isLowData) {
-              document.documentElement.classList.add('low-data');
-            } else {
-              document.documentElement.classList.remove('low-data');
-            }
-          }
-        } catch {
-          // Ignore connection API errors
-        }
-
-      } catch (error) {
-        console.error('Failed to load data:', error);
+      } catch {
+        console.warn('Failed to load some data');
       } finally {
-        setIsLoading(false);
+        // Ensure minimum loading time
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = Math.max(0, MIN_LOADING_TIME - elapsedTime);
+
+        setTimeout(() => {
+          setIsLoading(false);
+        }, remainingTime);
       }
     };
 
