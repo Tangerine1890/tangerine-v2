@@ -133,7 +133,12 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
         <div className="relative">
           <div
             onClick={() => openViewer && openViewer(product, selectedMediaIndex)}
-            className={`cursor-zoom-in relative w-full ${product.catalogOnly ? 'h-96' : 'h-72'} rounded-t-3xl overflow-hidden`}
+          <div
+            onClick={() => openViewer && openViewer(product, selectedMediaIndex)}
+            className={`cursor-zoom-in relative w-full ${product.catalogOnly ? 'h-96' : 'h-56'} rounded-t-3xl overflow-hidden`}
+            role="button"
+            tabIndex={0}
+          >
             role="button"
             tabIndex={0}
           >
@@ -147,7 +152,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                 <video
                   key={`main-${product.id}-${selectedMediaIndex}`}
                   ref={videoRef}
-                  className={`relative w-full ${product.catalogOnly ? 'h-96' : 'h-72'} object-cover video-smooth`}
+                  className={`relative w-full ${product.catalogOnly ? 'h-96' : 'h-56'} object-cover video-smooth`}
                   loop
                   muted
                   playsInline
@@ -191,7 +196,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                 src={product.thumbnail}
                 alt={product.name}
                 loading="lazy"
-                className={`w-full ${product.catalogOnly ? 'h-96' : 'h-72'} object-cover`}
+                className={`w-full ${product.catalogOnly ? 'h-96' : 'h-56'} object-cover`}
               />
             )}
 
@@ -288,10 +293,10 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-4 space-y-3">
           <div>
-            <h3 className="text-white font-bold text-lg mb-2">📝 Description</h3>
-            <p className="text-white/80 leading-relaxed text-sm">{product.desc}</p>
+            <h3 className="text-white font-bold text-base mb-1">📝 Description</h3>
+            <p className="text-white/80 leading-snug text-xs line-clamp-3">{product.desc}</p>
           </div>
 
           {isAccessory && !product.catalogOnly ? (
@@ -313,21 +318,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
               </div>
 
               <div>
-                <h3 className="text-white font-bold text-lg mb-3">⚖️ Quantité (min. {MIN_QUANTITY}g)</h3>
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                  {QUANTITY_OPTIONS.map((qty) => (
-                    <button
-                      key={qty}
-                      onClick={() => setSelectedQuantity(qty)}
-                      className={`glass text-white font-bold py-3 rounded-xl transition-all active:scale-95 ${selectedQuantity === qty
-                          ? 'cta-primary scale-105 shadow-lg'
-                          : 'hover:bg-white/10'
-                        }`}
-                    >
-                      {qty}g
-                    </button>
-                  ))}
-                </div>
+                <h3 className="text-white font-bold text-base mb-2">⚖️ Quantité (min. {MIN_QUANTITY}g)</h3>
 
                 <div className="flex gap-3">
                   <input
@@ -346,7 +337,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
 
               <button
                 onClick={handleAddToCart}
-                className="w-full glass-cta font-semibold py-4 rounded-2xl flex items-center justify-center gap-2"
+                className="w-full glass-cta font-semibold py-3 rounded-xl flex items-center justify-center gap-2"
               >
                 <span>🛒</span>
                 <span>Ajouter ({price}€)</span>
