@@ -203,7 +203,7 @@ const ProductCardComponent = memo(({
     <div
       ref={cardRef}
       style={style}
-      className={`snap-center flex-shrink-0 w-80 glass rounded-3xl p-5 card-hover relative overflow-hidden group h-[520px] flex flex-col ${videoState === 'loaded' && (isVisible || isInitiallyVisible) ? 'card-playing' : ''
+      className={`snap-center flex-shrink-0 w-80 glass rounded-3xl card-hover relative overflow-hidden group h-[520px] flex flex-col ${videoState === 'loaded' && (isVisible || isInitiallyVisible) ? 'card-playing' : ''
         } ${className || ''}`}
     >
       <div className="card-halo" aria-hidden="true" />
@@ -219,7 +219,7 @@ const ProductCardComponent = memo(({
           onViewDetails(product);
           trackEvent('product_detail_view', { product: product.name });
         }}
-        className="relative h-[360px] rounded-2xl overflow-hidden bg-black/30 mb-4 cursor-pointer flex-shrink-0"
+        className="relative flex-1 w-full overflow-hidden bg-black/30 cursor-pointer"
         role="button"
         tabIndex={0}
         onKeyDown={(event) => event.key === 'Enter' && onViewDetails(product)}
@@ -277,8 +277,9 @@ const ProductCardComponent = memo(({
           </span>
         </div>
       </div>
-      <div className="flex-1 flex flex-col">
-        <div className="flex items-center gap-2 mb-3">
+
+      <div className="p-4 flex flex-col gap-3 bg-black/20 backdrop-blur-sm">
+        <div className="flex items-center gap-2">
           <span className="text-3xl">{product.emoji}</span>
           <h3 className="text-white font-bold text-lg flex-1 truncate">{product.name}</h3>
           <span
@@ -292,38 +293,38 @@ const ProductCardComponent = memo(({
             {isAccessory ? 'Prix à définir' : product.isPack ? `${product.price}€` : `${PRICES[product.category]}€/g`}
           </span>
         </div>
-      </div>
 
-      <div className="flex gap-3">
-        {isAccessory ? (
-          <button
-            onClick={handleAccessoryCTA}
-            className="w-full glass-cta font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2"
-          >
-            <span>🔍</span>
-            <span>Voir détails</span>
-          </button>
-        ) : product.isPack ? (
-          <button
-            onClick={(event) => handleQuickAdd(1, event)}
-            className="w-full glass-cta font-semibold py-3 rounded-xl text-base flex items-center justify-center gap-2 bg-gradient-to-r from-can-gold to-can-copper text-white shadow-lg"
-          >
-            <span>🛒</span>
-            <span>Ajouter au panier ({product.price}€)</span>
-          </button>
-        ) : (
-          QUANTITY_OPTIONS.map((qty) => (
+        <div className="flex gap-3">
+          {isAccessory ? (
             <button
-              key={qty}
-              onClick={(event) => handleQuickAdd(qty, event)}
-              className="flex-1 quantity-button glass-cta font-semibold px-6 py-4 rounded-xl text-base leading-tight"
+              onClick={handleAccessoryCTA}
+              className="w-full glass-cta font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2"
             >
-              {qty}g
-              <br />
-              <span className="block text-xs opacity-90 mt-1">{PRICES[product.category] * qty}€</span>
+              <span>🔍</span>
+              <span>Voir détails</span>
             </button>
-          ))
-        )}
+          ) : product.isPack ? (
+            <button
+              onClick={(event) => handleQuickAdd(1, event)}
+              className="w-full glass-cta font-semibold py-3 rounded-xl text-base flex items-center justify-center gap-2 bg-gradient-to-r from-can-gold to-can-copper text-white shadow-lg"
+            >
+              <span>🛒</span>
+              <span>Ajouter au panier ({product.price}€)</span>
+            </button>
+          ) : (
+            QUANTITY_OPTIONS.map((qty) => (
+              <button
+                key={qty}
+                onClick={(event) => handleQuickAdd(qty, event)}
+                className="flex-1 quantity-button glass-cta font-semibold px-6 py-4 rounded-xl text-base leading-tight"
+              >
+                {qty}g
+                <br />
+                <span className="block text-xs opacity-90 mt-1">{PRICES[product.category] * qty}€</span>
+              </button>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

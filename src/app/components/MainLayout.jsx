@@ -135,10 +135,10 @@ export const MainLayout = ({
 
 
             {/* Fixed Bottom Navigation Bar */}
-            <nav className="fixed bottom-0 left-0 right-0 z-50 glass-dark border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] flex items-end justify-around px-2 pb-[env(safe-area-inset-bottom,16px)] pt-2 transition-all duration-300 bottom-nav rounded-t-3xl h-[80px]">
+            <nav className="fixed bottom-0 left-0 right-0 z-50 glass-dark border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] flex items-center justify-around px-2 pb-[env(safe-area-inset-bottom,0px)] pt-0 transition-all duration-300 bottom-nav rounded-t-3xl h-[80px]">
                 <button
                     onClick={() => handleCategoryChange('all')}
-                    className={`${textClasses} flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all nav-icon-btn mb-1`}
+                    className={`${textClasses} flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all nav-icon-btn`}
                     title="Accueil"
                     aria-label="Accueil"
                 >
@@ -164,7 +164,7 @@ export const MainLayout = ({
 
                 <button
                     onClick={() => setIsContactOpen(true)}
-                    className={`${textClasses} flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all nav-icon-btn mb-1`}
+                    className={`${textClasses} flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all nav-icon-btn`}
                     title="Contact"
                     aria-label="Contact"
                 >
