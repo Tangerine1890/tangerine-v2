@@ -297,10 +297,10 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
           </div>
         </div>
 
-        <div className="p-4 space-y-3">
+        <div className="p-5 space-y-5">
           <div>
-            <h3 className="text-white font-bold text-base mb-1">📝 Description</h3>
-            <p className="text-white/80 leading-snug text-xs line-clamp-3">{product.desc}</p>
+            <h3 className="text-white font-bold text-xl mb-3">📝 Description</h3>
+            <p className="text-white/90 leading-relaxed text-base">{product.desc}</p>
           </div>
 
           {isAccessory && !product.catalogOnly ? (
