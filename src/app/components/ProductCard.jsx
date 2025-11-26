@@ -282,7 +282,7 @@ const ProductCardComponent = memo(({
         <div className="flex items-center gap-2">
           <span className="text-3xl">{product.emoji}</span>
           <h3 className="text-white font-bold text-lg flex-1 truncate">{product.name}</h3>
-          {!product.catalogOnly && (
+          {!product.catalogOnly && !product.isPack && (
             <span
               className={`font-bold text-xs px-2 py-1 rounded-lg ${isAccessory
                 ? 'bg-white/10 text-white/80 border border-white/10'
@@ -297,21 +297,13 @@ const ProductCardComponent = memo(({
         </div>
 
         <div className="flex gap-3">
-          {isAccessory || product.catalogOnly ? (
+          {isAccessory || product.catalogOnly || product.isPack ? (
             <button
               onClick={handleAccessoryCTA}
-              className="w-full glass-cta font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2"
+              className="w-full glass-cta font-semibold py-3 rounded-2xl text-sm flex items-center justify-center gap-2"
             >
               <span>🔍</span>
               <span>Voir détails</span>
-            </button>
-          ) : product.isPack ? (
-            <button
-              onClick={(event) => handleQuickAdd(1, event)}
-              className="w-full glass-cta font-semibold py-3 rounded-xl text-base flex items-center justify-center gap-2 bg-gradient-to-r from-can-gold to-can-copper text-white shadow-lg"
-            >
-              <span>🛒</span>
-              <span>Ajouter au panier ({product.price}€)</span>
             </button>
           ) : (
             QUANTITY_OPTIONS.map((qty) => (
