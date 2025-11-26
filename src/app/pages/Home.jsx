@@ -21,45 +21,50 @@ export const Home = ({
             <div className="h-8" />
 
             <header className="relative z-10 max-w-7xl mx-auto px-4 pb-2 pt-2 telegram-header">
-                {/* Compact Hero Card - Logo + CAN 2025 */}
+                {/* Premium Hero Card - Logo + TANGERINE + CAN 2025 */}
                 <div
-                    onClick={() => handleCategoryChange('packs_can')}
-                    className="mb-4 relative overflow-hidden rounded-2xl bg-gradient-to-r from-can-green-dark to-black border border-can-gold/20 cursor-pointer group shadow-lg"
+                    className="mb-4 relative overflow-hidden rounded-3xl bg-gradient-to-br from-can-green-dark via-black to-can-green-dark/50 border border-can-gold/30 shadow-2xl group"
                 >
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 mix-blend-overlay"></div>
-                    <div className="relative z-10 p-3 flex gap-3">
-                        {/* Left: Logo - Full Height */}
-                        <img
-                            src={LOGO_URL}
-                            alt="Logo"
-                            loading="eager"
-                            className="w-14 h-full rounded-xl border-2 border-can-gold/30 shadow-lg object-cover flex-shrink-0"
-                            onError={(event) => {
-                                event.target.src = 'https://s10.aconvert.com/convert/p3r68-cdx67/avr8y-z3sxq.jpg';
-                            }}
-                        />
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-can-gold/10 blur-3xl rounded-full"></div>
 
-                        {/* Right: Stacked Content */}
-                        <div className="flex-1 flex flex-col gap-1.5 min-w-0">
-                            {/* Top: TANGERINE Branding - Full Width */}
-                            <div>
-                                <h1 className="text-xl font-black gradient-text tracking-tight leading-tight">TANGERINE</h1>
-                                <p className="text-white/60 text-[9px] font-medium">Premium Quality</p>
-                            </div>
+                    <div className="relative z-10 p-6 flex items-center gap-6">
+                        {/* Logo - 1/4 Width */}
+                        <div className="w-1/4 flex items-center justify-center">
+                            <img
+                                src={LOGO_URL}
+                                alt="Tangerine Logo"
+                                loading="eager"
+                                className="w-full aspect-square rounded-2xl border-2 border-can-gold/40 shadow-2xl object-cover ring-4 ring-can-gold/20"
+                                onError={(event) => {
+                                    event.target.src = 'https://s10.aconvert.com/convert/p3r68-cdx67/avr8y-z3sxq.jpg';
+                                }}
+                            />
+                        </div>
 
-                            {/* Bottom: CAN 2025 Info - Centered */}
-                            <div className="flex items-center justify-center gap-2 text-[10px]">
-                                <div className="flex items-center gap-1.5">
-                                    <span className="text-base">🏆</span>
-                                    <h3 className="text-white font-bold text-sm leading-tight">CAN 2025</h3>
+                        {/* Content - 3/4 Width */}
+                        <div className="flex-1 flex flex-col gap-4">
+                            {/* TANGERINE - Expanded */}
+                            <h1 className="text-4xl font-black gradient-text tracking-[0.25em] leading-tight uppercase">
+                                TANGERINE
+                            </h1>
+
+                            {/* CAN 2025 + Button */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-2xl">🏆</span>
+                                    <h3 className="text-white font-bold text-xl tracking-wide">CAN 2025</h3>
                                 </div>
-                                <p className="text-can-gold font-semibold tracking-wide">
-                                    Dispo dans <span className="text-white font-bold">16j</span>
-                                </p>
-                                <div className="flex items-center gap-1">
-                                    <span className="text-white text-[10px] font-bold group-hover:text-can-gold transition-colors">Voir packs</span>
-                                    <span className="text-white text-xs group-hover:translate-x-1 transition-transform">→</span>
-                                </div>
+
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCategoryChange('packs_can');
+                                    }}
+                                    className="px-6 py-2.5 rounded-full bg-gradient-to-r from-can-gold to-can-copper text-white font-bold text-sm tracking-wide shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 border border-white/20"
+                                >
+                                    Voir Packs
+                                </button>
                             </div>
                         </div>
                     </div>
