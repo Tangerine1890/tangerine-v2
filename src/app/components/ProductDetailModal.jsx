@@ -136,13 +136,13 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
       aria-labelledby="product-detail-title"
     >
       <div
-        className="glass-dark rounded-3xl max-w-2xl w-full max-h-[95vh] overflow-y-auto"
+        className="glass-dark rounded-3xl max-w-2xl w-full max-h-[95vh] min-h-[85vh] overflow-y-auto"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="relative">
           <div
             onClick={() => openViewer && openViewer(product, selectedMediaIndex)}
-            className={`cursor-zoom-in relative w-full ${product.catalogOnly ? 'h-96' : 'h-64'} rounded-t-3xl overflow-hidden`}
+            className={`cursor-zoom-in relative w-full ${product.catalogOnly ? 'h-96' : 'h-72'} rounded-t-3xl overflow-hidden`}
             role="button"
             tabIndex={0}
           >
@@ -156,7 +156,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                 <video
                   key={`main-${product.id}-${selectedMediaIndex}`}
                   ref={videoRef}
-                  className={`relative w-full ${product.catalogOnly ? 'h-96' : 'h-64'} object-cover video-smooth`}
+                  className={`relative w-full ${product.catalogOnly ? 'h-96' : 'h-72'} object-cover video-smooth`}
                   loop
                   muted
                   playsInline
@@ -200,7 +200,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                 src={product.thumbnail}
                 alt={product.name}
                 loading="lazy"
-                className={`w-full ${product.catalogOnly ? 'h-96' : 'h-64'} object-cover`}
+                className={`w-full ${product.catalogOnly ? 'h-96' : 'h-72'} object-cover`}
               />
             )}
 
