@@ -310,11 +310,11 @@ const ProductCardComponent = memo(({
               <button
                 key={qty}
                 onClick={(event) => handleQuickAdd(qty, event)}
-                className="flex-1 quantity-button glass-cta font-semibold px-6 py-4 rounded-xl text-base leading-tight"
+                className="flex-1 quantity-button glass-cta font-semibold px-6 py-2.5 rounded-xl text-base leading-tight"
               >
                 {qty}g
                 <br />
-                <span className="block text-xs opacity-90 mt-1">{PRICES[product.category] * qty}€</span>
+                <span className="block text-xs opacity-90 mt-0.5">{PRICES[product.category] * qty}€</span>
               </button>
             ))
           )}
