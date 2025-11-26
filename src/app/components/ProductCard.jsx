@@ -26,6 +26,8 @@ const ProductCardComponent = memo(({
   onToggleWishlist,
   isInitiallyVisible = false,
   isPriority = false,
+  style,
+  className,
 }) => {
   const [videoState, setVideoState] = useState('thumbnail');
   const [isVisible, setIsVisible] = useState(isInitiallyVisible);
@@ -162,7 +164,7 @@ const ProductCardComponent = memo(({
       setTimeout(() => button.classList.remove('tap-state'), 260);
     }
 
-    const price = PRICES[product.category] * qty;
+    const price = product.isPack ? product.price * qty : PRICES[product.category] * qty;
     onAddToCart(product, qty, price);
     if (onAnimateAdd && button) {
       onAnimateAdd(product, qty, button);
@@ -200,8 +202,9 @@ const ProductCardComponent = memo(({
   return (
     <div
       ref={cardRef}
+      style={style}
       className={`snap-center flex-shrink-0 w-80 glass rounded-3xl p-5 card-hover relative overflow-hidden group h-[520px] flex flex-col ${videoState === 'loaded' && (isVisible || isInitiallyVisible) ? 'card-playing' : ''
-        }`}
+        } ${className || ''}`}
     >
       <div className="card-halo" aria-hidden="true" />
       {onToggleWishlist && (
@@ -281,10 +284,12 @@ const ProductCardComponent = memo(({
           <span
             className={`font-bold text-xs px-2 py-1 rounded-lg ${isAccessory
               ? 'bg-white/10 text-white/80 border border-white/10'
-              : 'text-emerald-300 bg-emerald-500/20'
+              : product.isPack
+                ? 'text-can-gold bg-can-gold/20 border border-can-gold/30'
+                : 'text-emerald-300 bg-emerald-500/20'
               }`}
           >
-            {isAccessory ? 'Prix à définir' : `${PRICES[product.category]}€/g`}
+            {isAccessory ? 'Prix à définir' : product.isPack ? `${product.price}€` : `${PRICES[product.category]}€/g`}
           </span>
         </div>
       </div>
@@ -297,6 +302,14 @@ const ProductCardComponent = memo(({
           >
             <span>🔍</span>
             <span>Voir détails</span>
+          </button>
+        ) : product.isPack ? (
+          <button
+            onClick={(event) => handleQuickAdd(1, event)}
+            className="w-full glass-cta font-semibold py-3 rounded-xl text-base flex items-center justify-center gap-2 bg-gradient-to-r from-can-gold to-can-copper text-white shadow-lg"
+          >
+            <span>🛒</span>
+            <span>Ajouter au panier ({product.price}€)</span>
           </button>
         ) : (
           QUANTITY_OPTIONS.map((qty) => (

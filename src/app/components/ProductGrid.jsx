@@ -31,6 +31,8 @@ export const ProductGrid = ({
                     onToggleWishlist={onToggleWishlist}
                     isInitiallyVisible={index === 0}
                     isPriority={index === 0}
+                    className="animate-fade-in-right opacity-0"
+                    style={{ animationDelay: `${index * 100}ms` }}
                 />
             ))}
         </div>

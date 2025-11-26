@@ -11,7 +11,8 @@ export const useCartLogic = () => {
 
   const handleAddToCart = useCallback(
     async (product, quantity, price) => {
-      if (quantity < MIN_QUANTITY) {
+      // Bypass minimum quantity for packs and accessories
+      if (!product.isPack && product.category !== 'accessoires' && quantity < MIN_QUANTITY) {
         showNotification(`Minimum ${MIN_QUANTITY}g par produit`, 'error');
         error();
         return;

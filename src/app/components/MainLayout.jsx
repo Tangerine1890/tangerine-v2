@@ -132,60 +132,46 @@ export const MainLayout = ({
             {/* Main Content */}
             {children}
 
-            {/* Horizontal Scroll Progress Bar */}
-            <div className="fixed left-1/2 -translate-x-1/2 z-30 w-full max-w-md px-8" style={{ bottom: 'calc(max(0.25rem, calc(env(safe-area-inset-bottom, 0px) - 0.8rem)) + 5.5rem)' }}>
-                <div className="relative h-1.5 rounded-full overflow-hidden glass-dark border border-white/5 shadow-lg">
-                    <div
-                        className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 transition-all duration-300 ease-out shadow-[0_0_12px_rgba(249,115,22,0.5)]"
-                        style={{ width: `${horizontalScrollProgress}%` }}
-                        aria-hidden="true"
-                    />
-                    <div
-                        className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-orange-400/30 via-pink-400/30 to-purple-400/30 animate-pulse"
-                        style={{ width: `${horizontalScrollProgress}%` }}
-                        aria-hidden="true"
-                    />
-                </div>
-            </div>
+            {/* Main Content */}
+            {children}
 
-            <nav className="fixed left-1/2 -translate-x-1/2 z-40 glass-dark rounded-full shadow-2xl flex items-center transition-all duration-300 bottom-nav">
+            {/* Fixed Bottom Navigation Bar */}
+            <nav className="fixed bottom-0 left-0 right-0 z-50 glass-dark border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] flex items-center justify-around px-2 pb-[env(safe-area-inset-bottom,20px)] pt-3 transition-all duration-300 bottom-nav">
                 <button
                     onClick={() => handleCategoryChange('all')}
-                    className={`${textClasses} hover:scale-105 active:scale-95 transition-all nav-icon-btn`}
+                    className={`${textClasses} flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all nav-icon-btn`}
                     title="Accueil"
                     aria-label="Accueil"
                 >
-                    <span aria-hidden="true">🏠</span>
+                    <span aria-hidden="true" className="text-2xl">🏠</span>
+                    <span className="text-[10px] font-medium opacity-80">Accueil</span>
                 </button>
 
                 <button
                     onClick={() => setCartOpen(true)}
                     ref={cartButtonRef}
-                    className={`relative bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500 hover:from-orange-600 hover:via-pink-600 hover:to-orange-600 text-white rounded-full font-bold transition-all hover:scale-105 active:scale-95 glow cart-pill ${cart.length > 0 && !meetsMinimum ? 'has-progress' : ''}`}
+                    className={`relative flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all nav-icon-btn ${cart.length > 0 ? 'text-orange-400' : textClasses}`}
                     aria-label="Panier"
                 >
-                    <span className="mr-2" aria-hidden="true">🛒</span>
-                    Panier
-                    {cart.length > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center font-bold animate-pulse">
-                            {cart.length}
-                        </span>
-                    )}
-                    <div className="cart-progress-track">
-                        <div
-                            className="cart-progress-fill"
-                            style={{ width: cart.length > 0 && !meetsMinimum ? `${cartProgress}%` : '0%' }}
-                        />
+                    <div className="relative">
+                        <span aria-hidden="true" className="text-2xl">🛒</span>
+                        {cart.length > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-bold border-2 border-[#05090b] animate-bounce-subtle">
+                                {cart.length}
+                            </span>
+                        )}
                     </div>
+                    <span className="text-[10px] font-medium opacity-80">Panier</span>
                 </button>
 
                 <button
                     onClick={() => setIsContactOpen(true)}
-                    className={`${textClasses} hover:scale-105 active:scale-95 transition-all nav-icon-btn`}
+                    className={`${textClasses} flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all nav-icon-btn`}
                     title="Contact"
                     aria-label="Contact"
                 >
-                    <span aria-hidden="true">💬</span>
+                    <span aria-hidden="true" className="text-2xl">💬</span>
+                    <span className="text-[10px] font-medium opacity-80">Contact</span>
                 </button>
             </nav>
 

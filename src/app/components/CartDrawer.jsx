@@ -52,8 +52,11 @@ const CartDrawerComponent = ({
 
   const handleQuantityChange = useCallback((index, delta) => {
     const item = cart[index];
-    const unitPrice = PRICES[item.product.category];
-    const newQuantity = Math.max(MIN_QUANTITY, item.quantity + delta);
+    const isUnitBased = item.product.isPack || item.product.category === 'accessoires';
+    const unitPrice = isUnitBased ? item.product.price : PRICES[item.product.category];
+    const minQty = isUnitBased ? 1 : MIN_QUANTITY;
+    const newQuantity = Math.max(minQty, item.quantity + delta);
+
     onUpdateQuantity(index, newQuantity, unitPrice * newQuantity);
     trackEvent('cart_quantity_change', {
       product: item.product.name,
@@ -81,9 +84,8 @@ const CartDrawerComponent = ({
       )}
 
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-md glass-dark shadow-2xl transition-transform duration-300 z-[60] flex flex-col ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`fixed top-0 right-0 h-full w-full max-w-md glass-dark shadow-2xl transition-transform duration-300 z-[60] flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
       >
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
@@ -110,54 +112,62 @@ const CartDrawerComponent = ({
             </div>
           ) : (
             <>
-              {cart.map((item, idx) => (
-                <div
-                  key={`${item.product.id}-${idx}`}
-                  className="glass rounded-2xl p-4 animate-slide-in-right"
-                  style={{ animationDelay: `${idx * 30}ms` }}
-                >
-                  <div className="flex gap-3 mb-3">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-orange-500/20 flex items-center justify-center text-2xl flex-shrink-0">
-                      {item.product.emoji}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-semibold text-sm truncate">{item.product.name}</p>
-                      <p className="text-emerald-300 text-xs font-bold">
-                        {item.quantity}g × {PRICES[item.product.category]}€
-                      </p>
-                      <p className="text-white/90 font-bold text-lg">{item.totalPrice}€</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        onRemoveItem(idx);
-                        trackEvent('cart_item_removed', { product: item.product.name });
-                      }}
-                      className="bg-red-500/20 hover:bg-red-500/40 text-red-400 px-3 rounded-xl transition-all self-start active:scale-90"
-                    >
-                      🗑️
-                    </button>
-                  </div>
+              {cart.map((item, idx) => {
+                const isUnitBased = item.product.isPack || item.product.category === 'accessoires';
+                const unitPrice = isUnitBased ? item.product.price : PRICES[item.product.category];
+                const minQty = isUnitBased ? 1 : MIN_QUANTITY;
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleQuantityChange(idx, -1)}
-                      disabled={item.quantity <= MIN_QUANTITY}
-                      className="bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg transition-all font-bold flex-1 active:scale-95"
-                    >
-                      -1g
-                    </button>
-                    <div className="flex-1 text-center">
-                      <span className="text-white font-bold text-lg">{item.quantity}g</span>
+                return (
+                  <div
+                    key={`${item.product.id}-${idx}`}
+                    className="glass rounded-2xl p-4 animate-slide-in-right"
+                    style={{ animationDelay: `${idx * 30}ms` }}
+                  >
+                    <div className="flex gap-3 mb-3">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-orange-500/20 flex items-center justify-center text-2xl flex-shrink-0">
+                        {item.product.emoji}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-semibold text-sm truncate">{item.product.name}</p>
+                        <p className="text-emerald-300 text-xs font-bold">
+                          {item.quantity}{isUnitBased ? ' × ' : 'g × '}{unitPrice}€
+                        </p>
+                        <p className="text-white/90 font-bold text-lg">{item.totalPrice}€</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          onRemoveItem(idx);
+                          trackEvent('cart_item_removed', { product: item.product.name });
+                        }}
+                        className="bg-red-500/20 hover:bg-red-500/40 text-red-400 px-3 rounded-xl transition-all self-start active:scale-90"
+                      >
+                        🗑️
+                      </button>
                     </div>
-                    <button
-                      onClick={() => handleQuantityChange(idx, 1)}
-                      className="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg transition-all font-bold flex-1 active:scale-95"
-                    >
-                      +1g
-                    </button>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleQuantityChange(idx, -1)}
+                        disabled={item.quantity <= minQty}
+                        className="bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg transition-all font-bold flex-1 active:scale-95"
+                      >
+                        {isUnitBased ? '-1' : '-1g'}
+                      </button>
+                      <div className="flex-1 text-center">
+                        <span className="text-white font-bold text-lg">
+                          {item.quantity}{isUnitBased ? '' : 'g'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleQuantityChange(idx, 1)}
+                        className="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg transition-all font-bold flex-1 active:scale-95"
+                      >
+                        {isUnitBased ? '+1' : '+1g'}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               <PromoCodeInput
                 appliedPromo={appliedPromo}
@@ -183,11 +193,10 @@ const CartDrawerComponent = ({
                         onDeliveryCityChange(key);
                         trackEvent('delivery_city_changed', { city: info.name });
                       }}
-                      className={`${
-                        deliveryCity === key
+                      className={`${deliveryCity === key
                           ? 'cta-primary scale-105 glow'
                           : 'glass hover:bg-white/10'
-                      } text-white font-semibold py-3 px-2 rounded-xl transition-all text-sm relative active:scale-95`}
+                        } text-white font-semibold py-3 px-2 rounded-xl transition-all text-sm relative active:scale-95`}
                     >
                       <div className="flex items-center justify-center gap-1">
                         <span>{info.emoji}</span>
@@ -296,11 +305,10 @@ const CartDrawerComponent = ({
             <button
               onClick={onCheckout}
               disabled={!meetsMinimum}
-              className={`w-full font-bold py-4 rounded-2xl transition-all ${
-                meetsMinimum
+              className={`w-full font-bold py-4 rounded-2xl transition-all ${meetsMinimum
                   ? 'bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500 hover:from-orange-600 hover:via-pink-600 hover:to-orange-600 text-white hover:scale-105 active:scale-95 glow'
                   : 'bg-white/10 text-white/40 cursor-not-allowed opacity-50'
-              }`}
+                }`}
             >
               {meetsMinimum ? '🚀 Commander' : `🎯 Ajoutez ${remainingAmount.toFixed(0)}€ de produits`}
             </button>
