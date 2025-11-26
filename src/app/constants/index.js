@@ -39,7 +39,7 @@ export const ORDER_HISTORY_STORAGE_KEY = 'tangerine_order_history';
 export const USER_STORAGE_KEY = 'tangerine_user';
 
 export const CATEGORIES = [
-  { id: 'all', label: 'Tous', emoji: '✨', gradient: 'from-[#f97316] to-[#16a34a]' },
+  { id: 'all', label: 'All', emoji: '✨', gradient: 'from-[#f97316] to-[#16a34a]' },
   { id: 'wpff', label: 'WPFF', emoji: '💎', gradient: 'from-[#2563eb] to-[#06b6d4]' },
   { id: 'doublestatic', label: 'Double Static', emoji: '⚡', gradient: 'from-yellow-500 to-orange-500' },
   { id: 'packs_can', label: 'Packs CAN 2025', emoji: '🏆', gradient: 'from-can-green to-can-gold' },

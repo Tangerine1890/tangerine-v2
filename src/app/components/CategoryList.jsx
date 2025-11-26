@@ -10,7 +10,7 @@ export const CategoryList = ({ selectedCategory, onCategoryChange, scrollRef }) 
                         key={category.id}
                         onClick={() => onCategoryChange(category.id)}
                         className={`
-                            flex-shrink-0 px-5 py-2.5 rounded-full font-bold text-xs 
+                            flex-shrink-0 px-5 py-2.5 rounded-full font-bold text-sm 
                             transition-all duration-300 backdrop-blur-xl
                             ${isActive
                                 ? `bg-gradient-to-r ${category.gradient} text-white shadow-[0_4px_16px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.1)] scale-105 border border-white/20`
