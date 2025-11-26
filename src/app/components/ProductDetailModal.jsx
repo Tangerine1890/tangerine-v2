@@ -133,12 +133,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
         <div className="relative">
           <div
             onClick={() => openViewer && openViewer(product, selectedMediaIndex)}
-          <div
-            onClick={() => openViewer && openViewer(product, selectedMediaIndex)}
             className={`cursor-zoom-in relative w-full ${product.catalogOnly ? 'h-96' : 'h-56'} rounded-t-3xl overflow-hidden`}
-            role="button"
-            tabIndex={0}
-          >
             role="button"
             tabIndex={0}
           >
