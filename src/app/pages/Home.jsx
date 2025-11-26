@@ -20,7 +20,7 @@ export const Home = ({
         <>
             <div className="h-12" />
 
-            <header className="relative z-10 max-w-7xl mx-auto px-4 pb-4 pt-12 md:pt-16 telegram-header">
+            <header className="relative z-10 max-w-7xl mx-auto px-4 pb-4 pt-6 md:pt-8 telegram-header">
                 <div className="flex items-center justify-start gap-3 mb-6">
                     <img
                         src={LOGO_URL}
