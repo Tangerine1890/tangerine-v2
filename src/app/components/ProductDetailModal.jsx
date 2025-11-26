@@ -133,7 +133,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
         <div className="relative">
           <div
             onClick={() => openViewer && openViewer(product, selectedMediaIndex)}
-            className="cursor-zoom-in relative w-full h-72 rounded-t-3xl overflow-hidden"
+            className={`cursor-zoom-in relative w-full ${product.catalogOnly ? 'h-96' : 'h-72'} rounded-t-3xl overflow-hidden`}
             role="button"
             tabIndex={0}
           >
@@ -147,7 +147,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                 <video
                   key={`main-${product.id}-${selectedMediaIndex}`}
                   ref={videoRef}
-                  className="relative w-full h-72 object-cover video-smooth"
+                  className={`relative w-full ${product.catalogOnly ? 'h-96' : 'h-72'} object-cover video-smooth`}
                   loop
                   muted
                   playsInline
@@ -180,7 +180,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                           { error: error.message },
                         );
                         setTimeout(() => {
-                          videoRef.current?.play().catch(() => {});
+                          videoRef.current?.play().catch(() => { });
                         }, 500);
                       });
                   }}
@@ -191,7 +191,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                 src={product.thumbnail}
                 alt={product.name}
                 loading="lazy"
-                className="w-full h-72 object-cover"
+                className={`w-full ${product.catalogOnly ? 'h-96' : 'h-72'} object-cover`}
               />
             )}
 
@@ -236,11 +236,10 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                   setSelectedMediaIndex(idx);
                   setMediaLoaded(false);
                 }}
-                className={`rounded-xl overflow-hidden border-2 ${
-                  selectedMediaIndex === idx
-                    ? 'border-emerald-400 ring-2 ring-emerald-300/50'
-                    : 'border-white/10 hover:border-white/30'
-                } p-0 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-300/50`}
+                className={`rounded-xl overflow-hidden border-2 ${selectedMediaIndex === idx
+                  ? 'border-emerald-400 ring-2 ring-emerald-300/50'
+                  : 'border-white/10 hover:border-white/30'
+                  } p-0 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-300/50`}
                 style={{ minWidth: 96, minHeight: 64 }}
                 title={`Ouvrir média ${idx + 1}`}
                 role="option"
@@ -295,7 +294,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
             <p className="text-white/80 leading-relaxed text-sm">{product.desc}</p>
           </div>
 
-          {isAccessory ? (
+          {isAccessory && !product.catalogOnly ? (
             <div className="space-y-4">
               <div className="glass p-4 rounded-2xl flex items-center justify-between">
                 <div>
@@ -304,7 +303,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                 </div>
               </div>
             </div>
-          ) : (
+          ) : !isAccessory && !product.catalogOnly ? (
             <>
               <div className="glass p-4 rounded-2xl flex items-center justify-between">
                 <div>
@@ -320,11 +319,10 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                     <button
                       key={qty}
                       onClick={() => setSelectedQuantity(qty)}
-                      className={`glass text-white font-bold py-3 rounded-xl transition-all active:scale-95 ${
-                        selectedQuantity === qty
+                      className={`glass text-white font-bold py-3 rounded-xl transition-all active:scale-95 ${selectedQuantity === qty
                           ? 'cta-primary scale-105 shadow-lg'
                           : 'hover:bg-white/10'
-                      }`}
+                        }`}
                     >
                       {qty}g
                     </button>
@@ -354,7 +352,7 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
                 <span>Ajouter ({price}€)</span>
               </button>
             </>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
