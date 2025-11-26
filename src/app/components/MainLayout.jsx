@@ -132,14 +132,13 @@ export const MainLayout = ({
             {/* Main Content */}
             {children}
 
-            {/* Main Content */}
-            {children}
+
 
             {/* Fixed Bottom Navigation Bar */}
-            <nav className="fixed bottom-0 left-0 right-0 z-50 glass-dark border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] flex items-center justify-around px-2 pb-[env(safe-area-inset-bottom,20px)] pt-3 transition-all duration-300 bottom-nav">
+            <nav className="fixed bottom-0 left-0 right-0 z-50 glass-dark border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] flex items-end justify-around px-2 pb-[env(safe-area-inset-bottom,16px)] pt-2 transition-all duration-300 bottom-nav rounded-t-3xl h-[80px]">
                 <button
                     onClick={() => handleCategoryChange('all')}
-                    className={`${textClasses} flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all nav-icon-btn`}
+                    className={`${textClasses} flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all nav-icon-btn mb-1`}
                     title="Accueil"
                     aria-label="Accueil"
                 >
@@ -150,23 +149,22 @@ export const MainLayout = ({
                 <button
                     onClick={() => setCartOpen(true)}
                     ref={cartButtonRef}
-                    className={`relative flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all nav-icon-btn ${cart.length > 0 ? 'text-orange-400' : textClasses}`}
+                    className="relative flex flex-col items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-[0_8px_24px_rgba(249,115,22,0.4)] hover:scale-105 active:scale-95 transition-all -translate-y-6 border-4 border-[#05090b]"
                     aria-label="Panier"
                 >
                     <div className="relative">
                         <span aria-hidden="true" className="text-2xl">🛒</span>
                         {cart.length > 0 && (
-                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-bold border-2 border-[#05090b] animate-bounce-subtle">
+                            <span className="absolute -top-2 -right-2 bg-white text-orange-600 text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-bold border border-orange-100 animate-bounce-subtle">
                                 {cart.length}
                             </span>
                         )}
                     </div>
-                    <span className="text-[10px] font-medium opacity-80">Panier</span>
                 </button>
 
                 <button
                     onClick={() => setIsContactOpen(true)}
-                    className={`${textClasses} flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all nav-icon-btn`}
+                    className={`${textClasses} flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all nav-icon-btn mb-1`}
                     title="Contact"
                     aria-label="Contact"
                 >
