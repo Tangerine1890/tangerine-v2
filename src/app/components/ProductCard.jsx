@@ -300,7 +300,7 @@ const ProductCardComponent = memo(({
           {isAccessory || product.catalogOnly || product.isPack ? (
             <button
               onClick={handleAccessoryCTA}
-              className="w-full glass-cta font-semibold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2"
+              className="w-full glass-cta font-semibold h-[62px] rounded-xl text-base flex items-center justify-center gap-2"
             >
               <span>🔍</span>
               <span>Voir détails</span>
