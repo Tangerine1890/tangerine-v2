@@ -63,7 +63,7 @@ export const PRODUCTS = [
     category: 'doublestatic',
     name: 'Tropi Tangie',
     emoji: '🍊',
-    badge: 'Sold out soon!',
+    badge: 'SOLD OUT 🔥',
     media: ['https://file.garden/aRCOOh-cGER2BR_t/tropi_tangie.mp4'],
     mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/tropi_tangie.mp4']),
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1254.avif'],

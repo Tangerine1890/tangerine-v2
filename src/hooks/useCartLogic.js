@@ -20,7 +20,6 @@ export const useCartLogic = () => {
       try {
         await addToCart(product, quantity, price);
         success();
-        showNotification(`${product.emoji} ${product.name} ajouté`, 'success');
       } catch {
         error();
         showNotification('Erreur lors de l\'ajout', 'error');

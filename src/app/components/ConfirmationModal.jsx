@@ -51,7 +51,16 @@ const ConfirmationModalComponent = ({
 
   if (!isOpen) return null;
 
+  // Calculate pricing values
+  const calculatedSubtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
   const deliveryInfo = DELIVERY_PRICES[deliveryCity];
+  const calculatedDeliveryPrice = deliveryInfo?.price || 0;
+
+  // Use passed values or calculated ones
+  const finalSubtotal = subtotal !== undefined ? subtotal : calculatedSubtotal;
+  const finalDeliveryPrice = deliveryPrice !== undefined ? deliveryPrice : calculatedDeliveryPrice;
+  const finalDiscount = discount || 0;
+  const finalTotal = total !== undefined ? total : (finalSubtotal + finalDeliveryPrice - finalDiscount);
 
   return (
     <div
@@ -93,28 +102,28 @@ const ConfirmationModalComponent = ({
           <div className="glass rounded-xl p-4 space-y-2">
             <div className="flex justify-between text-white/80 text-sm">
               <span>Sous-total:</span>
-              <span className="font-bold">{subtotal}€</span>
+              <span className="font-bold">{finalSubtotal}€</span>
             </div>
-            {discount > 0 && (
+            {finalDiscount > 0 && (
               <>
                 <div className="flex justify-between text-green-400 text-sm">
                   <span>🎟️ Réduction:</span>
-                  <span className="font-bold">-{discount}€</span>
+                  <span className="font-bold">-{finalDiscount}€</span>
                 </div>
                 <div className="flex items-center gap-2 text-green-400 text-xs font-semibold">
                   <span>💚</span>
-                  <span>Vous avez économisé {discount}€ !</span>
+                  <span>Vous avez économisé {finalDiscount}€ !</span>
                 </div>
               </>
             )}
-            {deliveryPrice > 0 ? (
+            {finalDeliveryPrice > 0 ? (
               <>
                 <div className="flex justify-between text-white/80 text-sm">
                   <div className="flex items-center gap-2">
                     <span>{deliveryInfo.emoji}</span>
                     <span>Livraison:</span>
                   </div>
-                  <span className="font-bold">{deliveryPrice}€</span>
+                  <span className="font-bold">{finalDeliveryPrice}€</span>
                 </div>
                 <div className="text-white/60 text-xs">
                   ⏱️ Livraison estimée: {deliveryInfo.estimatedDays} jour{deliveryInfo.estimatedDays > 1 ? 's' : ''}
@@ -139,7 +148,7 @@ const ConfirmationModalComponent = ({
             </div>
             <div className="border-t border-white/20 pt-2 flex justify-between">
               <span className="text-white font-bold">Total:</span>
-              <span className="gradient-text font-black text-2xl">{total}€</span>
+              <span className="gradient-text font-black text-2xl">{finalTotal}€</span>
             </div>
           </div>
         </div>
