@@ -138,13 +138,13 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
       aria-modal="true"
       aria-labelledby="product-detail-title"
     >
-      {/* Premium Integrated Close Button - Right Side Center */}
+      {/* Premium Integrated Close Button - Top Right */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           onClose();
         }}
-        className="fixed right-6 top-1/2 -translate-y-1/2 z-[60] group"
+        className="fixed right-6 top-6 z-[60] group"
         aria-label="Fermer"
       >
         <div className="relative">
