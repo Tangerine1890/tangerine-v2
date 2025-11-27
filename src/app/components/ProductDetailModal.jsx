@@ -22,7 +22,7 @@ import {
 
 const videoManager = getVideoManager();
 
-const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer }) => {
+const ProductDetailModalComponent = ({ product, onClose, onAddToCart, onAnimateAdd, openViewer }) => {
   const [selectedQuantity, setSelectedQuantity] = useState(MIN_QUANTITY);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const [mediaLoaded, setMediaLoaded] = useState(false);
@@ -95,20 +95,25 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
     }
   }, [product, selectedMediaIndex]);
 
-  const handleAddToCart = useCallback(() => {
+  const handleAddToCart = useCallback((e) => {
     if (!product) return;
     // For packs, always add 1 unit. For other products, use selectedQuantity.
     const quantityToAdd = product.isPack ? 1 : selectedQuantity;
     const priceToAdd = product.isPack ? product.price : (PRICES[product.category] * quantityToAdd);
 
     onAddToCart(product, quantityToAdd, priceToAdd);
+
+    if (onAnimateAdd && e?.currentTarget) {
+      onAnimateAdd(product, quantityToAdd, e.currentTarget);
+    }
+
     trackEvent('add_to_cart_from_detail', {
       product: product.name,
       quantity: quantityToAdd,
       price: priceToAdd,
     });
     onClose();
-  }, [onAddToCart, onClose, product, selectedQuantity]);
+  }, [onAddToCart, onAnimateAdd, onClose, product, selectedQuantity]);
 
   const handleQuantityInput = (event) => {
     const value = event.target.value;

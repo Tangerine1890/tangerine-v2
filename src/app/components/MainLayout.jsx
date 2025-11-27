@@ -47,6 +47,7 @@ export const MainLayout = ({
 
     // Product Actions for Modals
     handleAddToCart,
+    handleAnimateAdd,
     openViewer,
     closeViewer,
     handleConfirmOrder
@@ -223,6 +224,7 @@ export const MainLayout = ({
                     product={selectedProduct}
                     onClose={() => setSelectedProduct(null)}
                     onAddToCart={handleAddToCart}
+                    onAnimateAdd={handleAnimateAdd}
                     openViewer={openViewer}
                 />
 

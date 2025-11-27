@@ -35,7 +35,15 @@ export const FlyingBadge = () => {
                     onAnimationComplete={() => removeAnimation(anim.id)}
                     className="flying-badge"
                 >
-                    {anim.text}
+                    {anim.image ? (
+                        <img
+                            src={anim.image}
+                            alt=""
+                            className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-xl"
+                        />
+                    ) : (
+                        anim.text
+                    )}
                 </motion.div>
             ))}
         </AnimatePresence>
