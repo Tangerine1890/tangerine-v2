@@ -206,8 +206,8 @@ const ProductCardComponent = memo(({
       style={style}
       initial={{ y: 20 }}
       whileInView={{ y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ type: 'spring', damping: 15, stiffness: 150, duration: 0.3 }}
       className={`snap-center flex-shrink-0 w-80 glass rounded-3xl card-hover relative overflow-hidden group h-[520px] flex flex-col ${videoState === 'loaded' && (isVisible || isInitiallyVisible) ? 'card-playing' : ''
         } ${className || ''}`}
     >

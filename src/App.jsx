@@ -167,7 +167,7 @@ const App = () => {
 
     try {
       const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 900 || /Mobi|Android/i.test(navigator.userAgent || ''));
-      const toPreload = PRODUCTS.slice(0, isMobile ? 3 : 5);
+      const toPreload = PRODUCTS.slice(0, isMobile ? 5 : 8); // Increased from 3/5 to 5/8
 
       toPreload.forEach((product) => {
         if (product.thumbnail) {
@@ -183,7 +183,7 @@ const App = () => {
           if (!src.match(/\.(mp4|webm|ogg)(\?.*)?$/i)) return;
           setTimeout(() => {
             videoManagerRef.current.preloadVideo(src);
-          }, index * (isMobile ? 50 : 200));
+          }, index * (isMobile ? 20 : 100)); // Reduced from 50/200 to 20/100
         });
       });
     } catch { /* ignore */ }
