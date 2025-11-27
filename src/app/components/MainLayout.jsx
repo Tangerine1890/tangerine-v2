@@ -149,7 +149,7 @@ export const MainLayout = ({
                 <button
                     onClick={() => setCartOpen(true)}
                     ref={cartButtonRef}
-                    className="relative flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 text-white shadow-[0_12px_40px_rgba(249,115,22,0.5),0_0_0_4px_rgba(249,115,22,0.1)] hover:scale-105 active:scale-95 transition-all"
+                    className="relative flex items-center justify-center w-20 h-14 rounded-2xl bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 text-white shadow-[0_12px_40px_rgba(249,115,22,0.5),0_0_0_4px_rgba(249,115,22,0.1)] hover:scale-105 active:scale-95 transition-all"
                     aria-label="Panier"
                 >
                     <div className="relative">
