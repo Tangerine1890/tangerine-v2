@@ -114,31 +114,6 @@ export const PRODUCTS = [
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1246.avif',
     desc: 'Raisin doux mélangé à des notes de biscuits croquants. Harmonie subtile et saveur élégante.'
   },
-  {
-    id: 'acc1',
-    category: 'accessoires',
-    name: 'TerpWrap',
-    emoji: '🟠',
-    catalogOnly: true,
-    media: ['https://file.garden/aRCOOh-cGER2BR_t/WRAP.mp4'],
-    mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/WRAP.mp4']),
-    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG'],
-    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG',
-    desc: 'Protégez le drip. Préservez les terpènes. Emballage premium conçu pour garder vos concentrés purs, puissants et riches en terpènes.'
-  },
-  {
-    id: 'acc2',
-    category: 'accessoires',
-    name: 'Wipes',
-    emoji: '🧼',
-    catalogOnly: true,
-    media: ['https://file.garden/aRCOOh-cGER2BR_t/wipes.mp4'],
-    mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/wipes.mp4']),
-    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG'],
-    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG',
-    desc: 'Fini les soucis collants. Élimine facilement les traces 🍯 ou 🍫 pour garder vos doigts impeccables.'
-  },
-  // --- PACKS CAN 2025 ---
   // --- PACKS CAN 2025 ---
   {
     id: 'pack_decouverte',
@@ -192,5 +167,30 @@ export const PRODUCTS = [
       '20g Double Static (4 strains)',
       '10g WPFF'
     ]
+  },
+  // --- ACCESSOIRES ---
+  {
+    id: 'acc1',
+    category: 'accessoires',
+    name: 'TerpWrap',
+    emoji: '🟠',
+    catalogOnly: true,
+    media: ['https://file.garden/aRCOOh-cGER2BR_t/WRAP.mp4'],
+    mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/WRAP.mp4']),
+    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG'],
+    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG',
+    desc: 'Protégez le drip. Préservez les terpènes. Emballage premium conçu pour garder vos concentrés purs, puissants et riches en terpènes.'
+  },
+  {
+    id: 'acc2',
+    category: 'accessoires',
+    name: 'Wipes',
+    emoji: '🧼',
+    catalogOnly: true,
+    media: ['https://file.garden/aRCOOh-cGER2BR_t/wipes.mp4'],
+    mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/wipes.mp4']),
+    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG'],
+    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1279.JPG',
+    desc: 'Fini les soucis collants. Élimine facilement les traces 🍯 ou 🍫 pour garder vos doigts impeccables.'
   }
 ];

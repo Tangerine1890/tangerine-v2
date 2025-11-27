@@ -59,7 +59,7 @@ const ContactModalComponent = ({ isOpen, onClose }) => {
             onClick={onClose}
             className="text-white/60 hover:text-white text-3xl leading-none transition-all"
             ref={closeRef}
-            >
+          >
             ×
           </button>
         </div>
@@ -73,19 +73,31 @@ const ContactModalComponent = ({ isOpen, onClose }) => {
             <p className="text-white/60 text-sm mb-6">Contactez-nous sur Telegram</p>
           </div>
 
-          <a
-            href="https://t.me/Tangerine_212"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => trackEvent('contact_telegram_click')}
-            className="block w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-4 rounded-2xl transition-all hover:scale-105 active:scale-95 glow text-center"
-          >
-            📲 Ouvrir Telegram
-          </a>
+          <div className="space-y-4">
+            <a
+              href="https://t.me/Tangerine_212"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackEvent('contact_telegram_click')}
+              className="block w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-4 rounded-2xl transition-all hover:scale-105 active:scale-95 glow text-center"
+            >
+              📲 @Tangerine_212
+            </a>
+
+            <a
+              href="https://t.me/angry0terps"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackEvent('contact_telegram_angry_click')}
+              className="block w-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold py-4 rounded-2xl transition-all hover:scale-105 active:scale-95 glow text-center"
+            >
+              📲 @angry0terps
+            </a>
+          </div>
 
           <div className="glass rounded-2xl p-4 text-center">
-            <p className="text-white font-bold mb-1">@Tangerine_212</p>
-            <p className="text-white/60 text-sm">Disponible 24/7</p>
+            <p className="text-white font-bold mb-2">Disponible 24/7</p>
+            <p className="text-white/60 text-sm">Deux contacts pour vous servir</p>
           </div>
 
           <div className="border-t border-white/20 pt-6">
