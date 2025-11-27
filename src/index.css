@@ -302,6 +302,21 @@ body {
   }
 }
 
+@keyframes scrollText {
+  0% {
+    transform: translate(0, -50%);
+  }
+
+  100% {
+    transform: translate(-80%, -50%);
+    /* Adjust based on content width */
+  }
+}
+
+.animate-scroll-text {
+  animation: scrollText 12s linear infinite;
+}
+
 .active-scale:active {
   transform: scale(0.95);
   transition: transform 0.1s ease;

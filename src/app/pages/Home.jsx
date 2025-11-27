@@ -65,9 +65,26 @@ export const Home = ({
                             <div className="flex items-center justify-between px-3 py-1.5">
                                 <div className="flex items-center gap-2">
                                     <span className="text-xl animate-bounce-subtle">🏆</span>
-                                    <h3 className="font-black text-xl tracking-wide italic text-white drop-shadow-md">
-                                        CAN <span className="text-can-gold">2025</span>
-                                    </h3>
+                                    <div className="h-8 overflow-hidden relative w-40">
+                                        <div className="animate-scroll-text whitespace-nowrap absolute top-1/2 -translate-y-1/2 flex items-center gap-8">
+                                            <h3 className="font-black text-xl tracking-wide italic text-white drop-shadow-md flex-shrink-0">
+                                                CAN <span className="text-can-gold">2025</span>
+                                            </h3>
+                                            <h3 className="font-bold text-lg text-white/90 flex-shrink-0">
+                                                Pack <span className="text-can-gold">Découverte</span>
+                                            </h3>
+                                            <h3 className="font-bold text-lg text-white/90 flex-shrink-0">
+                                                Pack <span className="text-can-gold">Supporter</span>
+                                            </h3>
+                                            <h3 className="font-bold text-lg text-white/90 flex-shrink-0">
+                                                Pack <span className="text-can-gold">MVP</span>
+                                            </h3>
+                                            {/* Duplicate first item for seamless loop */}
+                                            <h3 className="font-black text-xl tracking-wide italic text-white drop-shadow-md flex-shrink-0">
+                                                CAN <span className="text-can-gold">2025</span>
+                                            </h3>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <button

@@ -298,13 +298,22 @@ const ProductCardComponent = memo(({
 
         <div className="flex gap-3">
           {isAccessory || product.catalogOnly || product.isPack ? (
-            <button
-              onClick={handleAccessoryCTA}
-              className="w-[90%] mx-auto glass-cta font-semibold h-[62px] rounded-3xl text-base flex items-center justify-center gap-2"
-            >
-              <span>🔍</span>
-              <span>Voir détails</span>
-            </button>
+            <div className="flex gap-2 w-full">
+              <button
+                onClick={(e) => handleQuickAdd(1, e)}
+                className="flex-1 glass-cta font-semibold h-[52px] rounded-xl text-sm flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
+              >
+                <span>🛒</span>
+                <span>Ajouter</span>
+              </button>
+              <button
+                onClick={handleAccessoryCTA}
+                className="flex-1 glass font-semibold h-[52px] rounded-xl text-sm flex items-center justify-center gap-1.5 hover:bg-white/10 active:scale-95 transition-transform"
+              >
+                <span>👁️</span>
+                <span>Détails</span>
+              </button>
+            </div>
           ) : (
             QUANTITY_OPTIONS.map((qty) => (
               <button
