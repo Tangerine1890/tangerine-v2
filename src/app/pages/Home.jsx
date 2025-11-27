@@ -25,25 +25,25 @@ export const Home = ({
                 {/* Dynamic Hero Card - TANGERINE + CAN 2025 */}
                 {/* Dynamic Hero Card - TANGERINE + CAN 2025 */}
                 <div
-                    className="mb-2 relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl group backdrop-blur-md"
+                    className="mb-2 relative overflow-hidden rounded-2xl border border-emerald-500/20 shadow-2xl group backdrop-blur-md"
                     style={{
-                        background: 'rgba(2, 4, 5, 0.85)', // Slightly transparent dark base
+                        background: 'linear-gradient(180deg, rgba(6, 95, 70, 0.85) 0%, rgba(2, 4, 5, 0.95) 100%)', // Green to dark gradient
                     }}
                 >
-                    {/* Animated Background - Darker & More Premium */}
-                    <div className="absolute inset-0 opacity-40" style={{
-                        background: 'radial-gradient(circle at 50% -20%, #065f46 0%, transparent 60%), radial-gradient(circle at 100% 100%, #d97706 0%, transparent 50%)',
-                        animation: 'pulse 8s ease-in-out infinite alternate'
+                    {/* Animated Background - Organic & Fluid */}
+                    <div className="absolute inset-0 opacity-30" style={{
+                        background: 'radial-gradient(circle at 50% -20%, #10b981 0%, transparent 60%), radial-gradient(circle at 100% 100%, #d97706 0%, transparent 50%)',
+                        animation: 'pulse 6s ease-in-out infinite alternate'
                     }}></div>
 
                     {/* Dynamic Mesh Gradient Overlay */}
-                    <div className="absolute inset-0 opacity-20 mix-blend-color-dodge" style={{
-                        background: 'conic-gradient(from 0deg at 50% 50%, #000000 0%, #064e3b 25%, #000000 50%, #b45309 75%, #000000 100%)',
-                        animation: 'spin-slow 20s linear infinite'
+                    <div className="absolute inset-0 opacity-20 mix-blend-overlay" style={{
+                        background: 'conic-gradient(from 0deg at 50% 50%, #064e3b 0%, #047857 25%, #065f46 50%, #059669 75%, #064e3b 100%)',
+                        animation: 'spin-slow 15s linear infinite'
                     }}></div>
 
                     {/* Noise Texture for Grit */}
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 mix-blend-overlay"></div>
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay"></div>
 
                     <div className="relative z-10 p-4 flex flex-col gap-3">
                         {/* TANGERINE - Floating Header */}
