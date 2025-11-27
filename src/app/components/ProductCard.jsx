@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { motion } from 'framer-motion';
 import { registerTangerineComponent } from '../../lib/registry.js';
 import {
   PRICES,
@@ -200,9 +201,13 @@ const ProductCardComponent = memo(({
   }, [productKey]);
 
   return (
-    <div
+    <motion.div
       ref={cardRef}
       style={style}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ type: 'spring', damping: 20, stiffness: 100 }}
       className={`snap-center flex-shrink-0 w-80 glass rounded-3xl card-hover relative overflow-hidden group h-[520px] flex flex-col ${videoState === 'loaded' && (isVisible || isInitiallyVisible) ? 'card-playing' : ''
         } ${className || ''}`}
     >
@@ -337,7 +342,7 @@ const ProductCardComponent = memo(({
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 });
 
