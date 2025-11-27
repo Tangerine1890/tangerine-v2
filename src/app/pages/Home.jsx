@@ -18,9 +18,9 @@ export const Home = ({
 
     return (
         <>
+            <div className="h-4" />
 
-
-            <header className="relative z-10 max-w-7xl mx-auto px-4 pb-0 pt-2 telegram-header">
+            <header className="relative z-10 max-w-7xl mx-auto px-4 pb-2 pt-2 telegram-header">
                 {/* Dynamic Hero Card - TANGERINE + CAN 2025 */}
                 {/* Dynamic Hero Card - TANGERINE + CAN 2025 */}
                 {/* Dynamic Hero Card - TANGERINE + CAN 2025 */}
