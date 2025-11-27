@@ -38,7 +38,43 @@
   <link rel="preload" as="video" href="https://files.catbox.moe/p7wuqu.mp4" type="video/mp4" />
   <link rel="preload" as="image" href="https://file.garden/aRCOOh-cGER2BR_t/IMG_1241.avif"
     imagesrcset="https://file.garden/aRCOOh-cGER2BR_t/IMG_1241.avif" imagesizes="100vw" />
+
+  <!-- Telegram Web App Script - Mini Apps 2.0 with Fullscreen -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    // Force fullscreen mode on load (Telegram Mini Apps 2.0)
+    if (window.Telegram && window.Telegram.WebApp) {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      tg.expand();
+
+      // Request fullscreen immediately
+      if (tg.requestFullscreen) {
+        tg.requestFullscreen();
+      }
+
+      // Lock orientation to portrait (optional)
+      if (tg.lockOrientation) {
+        tg.lockOrientation();
+      }
+
+      // Disable vertical swipes
+      if (tg.disableVerticalSwipes) {
+        tg.disableVerticalSwipes();
+      }
+
+      // Set header color to match app
+      if (tg.setHeaderColor) {
+        tg.setHeaderColor('#05090b');
+      }
+
+      // Set background color
+      if (tg.setBackgroundColor) {
+        tg.setBackgroundColor('#05090b');
+      }
+    }
+  </script>
+
   <title>Tangerine — Premium Shop</title>
 </head>
 
