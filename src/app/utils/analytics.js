@@ -8,8 +8,9 @@ const ensureMetricsStore = () => {
   return window.__mediaMetrics;
 };
 
-const UMAMI_WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID || '75e01154-ec06-4bdf-bc72-4b7fb1157e5b';
-const CLARITY_TAG_ID = import.meta.env.VITE_CLARITY_TAG_ID || 'u2rza6fjql';
+const UMAMI_WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID;
+const CLARITY_TAG_ID = import.meta.env.VITE_CLARITY_TAG_ID;
+const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
 const SHOULD_REGISTER_SW = import.meta.env.PROD === true;
 
 export const trackEvent = (eventName, eventData = {}) => {
@@ -17,6 +18,9 @@ export const trackEvent = (eventName, eventData = {}) => {
   try {
     if (typeof window.umami !== 'undefined' && typeof window.umami.track === 'function') {
       window.umami.track(eventName, eventData);
+    }
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', eventName, eventData);
     }
   } catch (error) {
     console.warn('trackEvent failed', error);
@@ -105,7 +109,7 @@ export const disableUmamiForOwner = (attempt = 0) => {
 const loadAnalyticsScripts = () => {
   if (!hasWindow()) return;
 
-  if (!UMAMI_WEBSITE_ID && !CLARITY_TAG_ID) {
+  if (!UMAMI_WEBSITE_ID && !CLARITY_TAG_ID && !GA_MEASUREMENT_ID) {
     return;
   }
 
@@ -118,21 +122,33 @@ const loadAnalyticsScripts = () => {
       document.head.appendChild(umami);
     }
 
-    if (CLARITY_TAG_ID) {
-      (function (c, l, a, r, i, t, y) {
-        c[a] = c[a] || function () {
-          (c[a].q = c[a].q || []).push(arguments);
-        };
-        t = l.createElement(r);
-        t.async = 1;
-        t.src = `https://www.clarity.ms/tag/${i}`;
-        y = l.getElementsByTagName(r)[0];
-        y.parentNode.insertBefore(t, y);
-      }(window, document, 'clarity', 'script', CLARITY_TAG_ID));
-    }
-  } catch (error) {
-    console.warn('Failed to load analytics scripts', error);
+    (function (c, l, a, r, i, t, y) {
+      c[a] = c[a] || function () {
+        (c[a].q = c[a].q || []).push(arguments);
+      };
+      t = l.createElement(r);
+      t.async = 1;
+      t.src = `https://www.clarity.ms/tag/${i}`;
+      y = l.getElementsByTagName(r)[0];
+      y.parentNode.insertBefore(t, y);
+    }(window, document, 'clarity', 'script', CLARITY_TAG_ID));
   }
+
+    if (GA_MEASUREMENT_ID) {
+    const gaScript = document.createElement('script');
+    gaScript.async = true;
+    gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+    document.head.appendChild(gaScript);
+
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { window.dataLayer.push(arguments); }
+    window.gtag = gtag;
+    gtag('js', new Date());
+    gtag('config', GA_MEASUREMENT_ID);
+  }
+} catch (error) {
+  console.warn('Failed to load analytics scripts', error);
+}
 };
 
 export const scheduleDeferredAnalyticsLoad = () => {
