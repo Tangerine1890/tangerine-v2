@@ -1,7 +1,28 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import * as Sentry from "@sentry/react";
 import './index.css';
 import App from './App.jsx';
+
+// Initialize Sentry for error monitoring
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  environment: import.meta.env.MODE, // "development" or "production"
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration({
+      maskAllText: false,
+      blockAllMedia: false,
+    }),
+  ],
+  // Performance Monitoring
+  tracesSampleRate: import.meta.env.MODE === 'production' ? 0.1 : 1.0, // 10% in prod, 100% in dev
+  // Session Replay
+  replaysSessionSampleRate: 0.1, // 10% of sessions
+  replaysOnErrorSampleRate: 1.0, // 100% of sessions with errors
+  // Don't send errors in development unless explicitly testing
+  enabled: import.meta.env.MODE === 'production' || import.meta.env.VITE_SENTRY_ENABLED === 'true',
+});
 
 // Prevent Web3 library conflicts
 if (typeof window !== 'undefined' && !window.ethereum) {
@@ -110,6 +131,48 @@ if (typeof window !== 'undefined' && !window.Telegram) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <Sentry.ErrorBoundary
+      fallback={({ error, resetError }) => (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(to br, #05090b, #0b1411, #05090b)',
+          color: 'white',
+          padding: '2rem',
+          textAlign: 'center',
+          fontFamily: 'system-ui, -apple-system, sans-serif'
+        }}>
+          <div>
+            <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⚠️</div>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+              Oups, un petit problème technique
+            </h1>
+            <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '2rem', maxWidth: '400px' }}>
+              L'application a rencontré une erreur. Notre équipe a été notifiée.
+            </p>
+            <button
+              onClick={resetError}
+              style={{
+                background: 'linear-gradient(to r, #f97316, #ec4899, #f97316)',
+                color: 'white',
+                padding: '0.75rem 2rem',
+                borderRadius: '1rem',
+                border: 'none',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                fontSize: '1rem'
+              }}
+            >
+              🔄 Recharger l'application
+            </button>
+          </div>
+        </div>
+      )}
+      showDialog
+    >
+      <App />
+    </Sentry.ErrorBoundary>
   </StrictMode>,
 );
