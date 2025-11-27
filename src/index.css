@@ -317,6 +317,22 @@ body {
   animation: scrollText 12s linear infinite;
 }
 
+@keyframes bounceHorizontal {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(4px);
+  }
+}
+
+.animate-bounce-horizontal {
+  animation: bounceHorizontal 2s ease-in-out infinite;
+}
+
 .active-scale:active {
   transform: scale(0.95);
   transition: transform 0.1s ease;
