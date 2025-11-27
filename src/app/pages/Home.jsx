@@ -69,13 +69,13 @@ export const Home = ({
                                                 CAN <span className="text-can-gold">2025</span>
                                             </h3>
                                             <h3 className="font-bold text-lg text-white/90 flex-shrink-0">
-                                                Pack <span className="text-can-gold">Découverte</span>
+                                                Pack <span className="text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]">Découverte</span>
                                             </h3>
                                             <h3 className="font-bold text-lg text-white/90 flex-shrink-0">
-                                                Pack <span className="text-can-gold">Supporter</span>
+                                                Pack <span className="text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]">Supporter</span>
                                             </h3>
                                             <h3 className="font-bold text-lg text-white/90 flex-shrink-0">
-                                                Pack <span className="text-can-gold">MVP</span>
+                                                Pack <span className="text-can-gold drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]">MVP</span>
                                             </h3>
                                             {/* Duplicate first item for seamless loop */}
                                             <h3 className="font-black text-xl tracking-wide italic text-white drop-shadow-md flex-shrink-0">
