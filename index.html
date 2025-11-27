@@ -17,9 +17,25 @@
     // Init Telegram IMMEDIATELY (before anything else)
     if (window.Telegram?.WebApp) {
       try {
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
-        console.log('✅ Telegram WebApp ready + expanded');
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        // Force fullscreen immediately
+        if (typeof tg.requestFullscreen === 'function') {
+          tg.requestFullscreen();
+        }
+
+        // Listen for viewport changes and re-request fullscreen
+        if (typeof tg.onEvent === 'function') {
+          tg.onEvent('viewportChanged', function () {
+            if (!tg.isFullscreen && typeof tg.requestFullscreen === 'function') {
+              tg.requestFullscreen();
+            }
+          });
+        }
+
+        console.log('✅ Telegram WebApp ready + expanded + fullscreen requested');
       } catch (e) {
         console.error('Telegram init error:', e);
       }
