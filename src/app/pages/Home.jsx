@@ -59,8 +59,6 @@ export const Home = ({
                         <div className="relative overflow-hidden rounded-xl border border-white/10 bg-white/5 backdrop-blur-md p-1">
                             {/* Inner Border/Glow */}
                             <div className="absolute inset-0 rounded-xl border border-white/5 pointer-events-none"></div>
-                            <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#020405] rounded-full border-r border-white/10"></div>
-                            <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#020405] rounded-full border-l border-white/10"></div>
 
                             <div className="flex items-center justify-between px-3 py-1.5">
                                 <div className="flex items-center gap-2">
