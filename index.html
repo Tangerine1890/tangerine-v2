@@ -2,13 +2,30 @@
 <html lang="fr">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="description" content="Tangerine – Premium WPFF, Double Static & Fresh Frozen Shop" />
   <meta name="theme-color" content="#05090b" />
   <meta name="color-scheme" content="dark" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- Telegram WebApp SDK - Load FIRST -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    // Init Telegram IMMEDIATELY (before anything else)
+    if (window.Telegram?.WebApp) {
+      try {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+        console.log('✅ Telegram WebApp ready + expanded');
+      } catch (e) {
+        console.error('Telegram init error:', e);
+      }
+    }
+  </script>
+
   <link rel="icon" type="image/png" href="https://i.imgur.com/opUOZzu.jpeg" />
   <link rel="apple-touch-icon" href="https://i.imgur.com/opUOZzu.jpeg" />
   <link rel="manifest" href="/manifest.webmanifest" />
@@ -38,42 +55,6 @@
   <link rel="preload" as="video" href="https://files.catbox.moe/p7wuqu.mp4" type="video/mp4" />
   <link rel="preload" as="image" href="https://file.garden/aRCOOh-cGER2BR_t/IMG_1241.avif"
     imagesrcset="https://file.garden/aRCOOh-cGER2BR_t/IMG_1241.avif" imagesizes="100vw" />
-
-  <!-- Telegram Web App Script - Mini Apps 2.0 with Fullscreen -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script>
-    // Force fullscreen mode on load (Telegram Mini Apps 2.0)
-    if (window.Telegram && window.Telegram.WebApp) {
-      const tg = window.Telegram.WebApp;
-      tg.ready();
-      tg.expand();
-
-      // Request fullscreen immediately
-      if (tg.requestFullscreen) {
-        tg.requestFullscreen();
-      }
-
-      // Lock orientation to portrait (optional)
-      if (tg.lockOrientation) {
-        tg.lockOrientation();
-      }
-
-      // Disable vertical swipes
-      if (tg.disableVerticalSwipes) {
-        tg.disableVerticalSwipes();
-      }
-
-      // Set header color to match app
-      if (tg.setHeaderColor) {
-        tg.setHeaderColor('#05090b');
-      }
-
-      // Set background color
-      if (tg.setBackgroundColor) {
-        tg.setBackgroundColor('#05090b');
-      }
-    }
-  </script>
 
   <title>Tangerine — Premium Shop</title>
 </head>
