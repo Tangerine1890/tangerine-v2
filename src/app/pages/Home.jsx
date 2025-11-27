@@ -23,10 +23,11 @@ export const Home = ({
             <header className="relative z-10 max-w-7xl mx-auto px-4 pb-2 pt-2 telegram-header">
                 {/* Dynamic Hero Card - TANGERINE + CAN 2025 */}
                 {/* Dynamic Hero Card - TANGERINE + CAN 2025 */}
+                {/* Dynamic Hero Card - TANGERINE + CAN 2025 */}
                 <div
-                    className="mb-4 relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl group"
+                    className="mb-4 relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl group backdrop-blur-md"
                     style={{
-                        background: '#020405', // Deepest black/blue base
+                        background: 'rgba(2, 4, 5, 0.85)', // Slightly transparent dark base
                     }}
                 >
                     {/* Animated Background - Darker & More Premium */}
@@ -44,19 +45,12 @@ export const Home = ({
                     {/* Noise Texture for Grit */}
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 mix-blend-overlay"></div>
 
-                    <div className="relative z-10 p-5 flex flex-col gap-4">
+                    <div className="relative z-10 p-4 flex flex-col gap-3">
                         {/* TANGERINE - Floating Header */}
                         <div className="relative">
-                            <h1 className="text-4xl font-black text-center tracking-[0.2em] leading-none uppercase"
-                                style={{
-                                    background: 'linear-gradient(to bottom, #ffffff 0%, #94a3b8 100%)',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent',
-                                    filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))'
-                                }}>
+                            <h1 className="text-3xl font-black gradient-text tracking-[0.25em] leading-tight uppercase text-center drop-shadow-lg">
                                 TANGERINE
                             </h1>
-                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-0.5 bg-gradient-to-r from-transparent via-can-gold to-transparent opacity-50"></div>
                         </div>
 
                         {/* CAN 2025 - Framed "Ticket" Style */}
@@ -66,15 +60,12 @@ export const Home = ({
                             <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#020405] rounded-full border-r border-white/10"></div>
                             <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#020405] rounded-full border-l border-white/10"></div>
 
-                            <div className="flex items-center justify-between px-4 py-2">
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-can-gold/80 tracking-widest uppercase mb-0.5">Événement</span>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xl animate-bounce-subtle">🏆</span>
-                                        <h3 className="font-black text-2xl tracking-wide italic text-white drop-shadow-md">
-                                            CAN <span className="text-can-gold">2025</span>
-                                        </h3>
-                                    </div>
+                            <div className="flex items-center justify-between px-3 py-1.5">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xl animate-bounce-subtle">🏆</span>
+                                    <h3 className="font-black text-xl tracking-wide italic text-white drop-shadow-md">
+                                        CAN <span className="text-can-gold">2025</span>
+                                    </h3>
                                 </div>
 
                                 <button
@@ -82,7 +73,7 @@ export const Home = ({
                                         e.stopPropagation();
                                         handleCategoryChange('packs_can');
                                     }}
-                                    className="relative overflow-hidden px-4 py-2 rounded-lg bg-gradient-to-r from-can-gold to-amber-600 text-white font-bold text-xs tracking-wider uppercase shadow-lg hover:scale-105 active:scale-95 transition-all group-hover:shadow-can-gold/20"
+                                    className="relative overflow-hidden px-4 py-1.5 rounded-lg bg-gradient-to-r from-can-gold to-amber-600 text-white font-bold text-xs tracking-wider uppercase shadow-lg hover:scale-105 active:scale-95 transition-all group-hover:shadow-can-gold/20"
                                 >
                                     <span className="relative z-10">Voir Packs</span>
                                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
