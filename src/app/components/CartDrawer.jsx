@@ -108,7 +108,13 @@ const CartDrawerComponent = ({
             <div className="text-center mt-20 animate-fade-in-up">
               <div className="text-7xl mb-4 float">🛒</div>
               <p className="text-white/60 text-lg font-semibold mb-2">Panier vide</p>
-              <p className="text-white/40 text-sm">Ajoutez des produits</p>
+              <p className="text-white/40 text-sm mb-6">Ajoutez des produits</p>
+              <button
+                onClick={onClose}
+                className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition-all active:scale-95"
+              >
+                Découvrir nos produits
+              </button>
             </div>
           ) : (
             <>
@@ -194,8 +200,8 @@ const CartDrawerComponent = ({
                         trackEvent('delivery_city_changed', { city: info.name });
                       }}
                       className={`${deliveryCity === key
-                          ? 'cta-primary scale-105 glow'
-                          : 'glass hover:bg-white/10'
+                        ? 'cta-primary scale-105 glow'
+                        : 'glass hover:bg-white/10'
                         } text-white font-semibold py-3 px-2 rounded-xl transition-all text-sm relative active:scale-95`}
                     >
                       <div className="flex items-center justify-center gap-1">
@@ -306,8 +312,8 @@ const CartDrawerComponent = ({
               onClick={onCheckout}
               disabled={!meetsMinimum}
               className={`w-full font-bold py-4 rounded-2xl transition-all ${meetsMinimum
-                  ? 'bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500 hover:from-orange-600 hover:via-pink-600 hover:to-orange-600 text-white hover:scale-105 active:scale-95 glow'
-                  : 'bg-white/10 text-white/40 cursor-not-allowed opacity-50'
+                ? 'bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500 hover:from-orange-600 hover:via-pink-600 hover:to-orange-600 text-white hover:scale-105 active:scale-95 glow'
+                : 'bg-white/10 text-white/40 cursor-not-allowed opacity-50'
                 }`}
             >
               {meetsMinimum ? '🚀 Commander' : `🎯 Ajoutez ${remainingAmount.toFixed(0)}€ de produits`}
