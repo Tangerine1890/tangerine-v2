@@ -143,7 +143,7 @@ export const MainLayout = ({
                     aria-label="Accueil"
                 >
                     <span aria-hidden="true" className="text-2xl">🏠</span>
-                    <span className="text-[10px] font-semibold opacity-70">Accueil</span>
+                    <span className="text-[11px] font-bold opacity-80">Accueil</span>
                 </button>
 
                 <button
@@ -169,7 +169,7 @@ export const MainLayout = ({
                     aria-label="Contact"
                 >
                     <span aria-hidden="true" className="text-2xl">💬</span>
-                    <span className="text-[10px] font-semibold opacity-70">Contact</span>
+                    <span className="text-[11px] font-bold opacity-80">Contact</span>
                 </button>
             </nav>
 
