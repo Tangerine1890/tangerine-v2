@@ -3,7 +3,7 @@ import { useUIStore } from '../../store/uiStore.js';
 import { useSettingsStore } from '../../store/settingsStore.js';
 import { useCartStore } from '../../store/cartStore.js';
 import { useTMALogic } from '../../hooks/useTMALogic.js';
-import { MIN_SPEND } from '../constants/index.js';
+import { MIN_WEIGHT } from '../constants/index.js';
 
 import { ThemeToggle } from './ThemeToggle.jsx';
 import { ParticlesBackground } from './ParticlesBackground.jsx';
@@ -79,8 +79,13 @@ export const MainLayout = ({
     const textClasses = theme === 'light' ? 'text-slate-900' : 'text-white';
 
     const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
-    const meetsMinimum = subtotal >= MIN_SPEND;
-    const cartProgress = Math.min(100, (subtotal / MIN_SPEND) * 100);
+    const totalWeight = cart.reduce((sum, item) => {
+        if (item.product.category === 'accessoires') return sum;
+        if (item.product.isPack) return sum + (item.product.weight || 0) * item.quantity;
+        return sum + item.quantity;
+    }, 0);
+    const meetsMinimum = totalWeight >= MIN_WEIGHT;
+    const cartProgress = Math.min(100, (totalWeight / MIN_WEIGHT) * 100);
 
     return (
         <div className={bgClasses}>

@@ -24,7 +24,7 @@ import {
 // Constants & Data
 import {
   DELIVERY_PRICES,
-  MIN_SPEND,
+  MIN_WEIGHT,
   PROMO_CODES,
   WELCOME_STORAGE_KEY,
 } from './app/constants/index.js';
@@ -327,9 +327,15 @@ const App = () => {
       return;
     }
 
-    if (subtotal < MIN_SPEND) {
-      const remaining = MIN_SPEND - subtotal;
-      showNotification(`Minimum de ${MIN_SPEND}€ requis (hors livraison). Ajoutez encore ${remaining.toFixed(0)}€ de produits`, 'error');
+    const totalWeight = cart.reduce((sum, item) => {
+      if (item.product.category === 'accessoires') return sum;
+      if (item.product.isPack) return sum + (item.product.weight || 0) * item.quantity;
+      return sum + item.quantity;
+    }, 0);
+
+    if (totalWeight < MIN_WEIGHT) {
+      const remaining = MIN_WEIGHT - totalWeight;
+      showNotification(`Minimum de ${MIN_WEIGHT}g requis. Ajoutez encore ${remaining}g de produits`, 'error');
       return;
     }
 

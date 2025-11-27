@@ -8,7 +8,7 @@ import { registerTangerineComponent } from '../../lib/registry.js';
 import {
   DELIVERY_PRICES,
   MIN_QUANTITY,
-  MIN_SPEND,
+  MIN_WEIGHT,
   PRICES,
   PROMO_CODES,
 } from '../constants/index.js';
@@ -46,10 +46,18 @@ const CartDrawerComponent = ({
     return 0;
   }, [appliedPromo, orderTotal]);
 
+  const totalWeight = useMemo(() => {
+    return cart.reduce((sum, item) => {
+      if (item.product.category === 'accessoires') return sum;
+      if (item.product.isPack) return sum + (item.product.weight || 0) * item.quantity;
+      return sum + item.quantity;
+    }, 0);
+  }, [cart]);
+
   const total = orderTotal - discount;
-  const meetsMinimum = subtotal >= MIN_SPEND;
-  const remainingAmount = Math.max(0, MIN_SPEND - subtotal);
-  const progressPercentage = Math.min(100, (subtotal / MIN_SPEND) * 100);
+  const meetsMinimum = totalWeight >= MIN_WEIGHT;
+  const remainingWeight = Math.max(0, MIN_WEIGHT - totalWeight);
+  const progressPercentage = Math.min(100, (totalWeight / MIN_WEIGHT) * 100);
 
   const handleQuantityChange = useCallback((index, delta) => {
     const item = cart[index];
@@ -299,9 +307,9 @@ const CartDrawerComponent = ({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm">🎯</span>
-                          <p className="text-white font-bold text-xs">Min. {MIN_SPEND}€</p>
+                          <p className="text-white font-bold text-xs">Min. {MIN_WEIGHT}g</p>
                         </div>
-                        <p className="text-white/80 font-semibold text-xs">{subtotal}€/{MIN_SPEND}€</p>
+                        <p className="text-white/80 font-semibold text-xs">{totalWeight}g/{MIN_WEIGHT}g</p>
                       </div>
 
                       <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
@@ -312,7 +320,7 @@ const CartDrawerComponent = ({
                       </div>
 
                       <p className="text-white/60 text-xs text-center">
-                        Ajoutez <span className="text-orange-400 font-bold">{remainingAmount.toFixed(0)}€</span> de plus
+                        Ajoutez <span className="text-orange-400 font-bold">{remainingWeight}g</span> de plus
                       </p>
                     </div>
                   )}
@@ -326,7 +334,7 @@ const CartDrawerComponent = ({
                     : 'bg-white/10 text-white/40 cursor-not-allowed opacity-50'
                     }`}
                 >
-                  {meetsMinimum ? '🚀 Commander' : `🎯 Ajoutez ${remainingAmount.toFixed(0)}€ de produits`}
+                  {meetsMinimum ? '🚀 Commander' : `🎯 Ajoutez ${remainingWeight}g de produits`}
                 </button>
               </div>
             )}

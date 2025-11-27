@@ -25,7 +25,7 @@ export const PROMO_CODES = {
 
 export const QUANTITY_OPTIONS = [5, 10, 20];
 export const MIN_QUANTITY = 5;
-export const MIN_SPEND = 200;
+export const MIN_WEIGHT = 15;
 
 export const WELCOME_STORAGE_KEY = 'tangerine_welcome_shown';
 export const THEME_STORAGE_KEY = 'tangerine_theme';
