@@ -138,6 +138,37 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
       aria-modal="true"
       aria-labelledby="product-detail-title"
     >
+      {/* Premium Close Button - Right Side Center */}
+      <button
+        onClick={onClose}
+        className="fixed right-4 top-1/2 -translate-y-1/2 z-[60] group"
+        aria-label="Fermer"
+      >
+        <div className="relative">
+          {/* Glassmorphic background with glow */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-white/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+          {/* Main button */}
+          <div className="relative w-12 h-12 rounded-full glass backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl group-hover:border-white/40 group-hover:bg-white/10 transition-all duration-300 active:scale-90">
+            {/* Animated X icon */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 text-white/90 group-hover:text-white group-hover:rotate-90 transition-all duration-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </div>
+        </div>
+      </button>
+
       <div
         className="glass-dark rounded-3xl max-w-2xl w-full max-h-[95vh] min-h-[85vh] overflow-y-auto"
         onClick={(event) => event.stopPropagation()}
