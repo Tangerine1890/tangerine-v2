@@ -14,7 +14,6 @@ export const FlyingBadge = () => {
                         top: anim.startY,
                         opacity: 1,
                         scale: 1,
-                        rotate: 0,
                         position: 'fixed',
                         zIndex: 9999,
                         pointerEvents: 'none'
@@ -22,28 +21,24 @@ export const FlyingBadge = () => {
                     animate={{
                         left: [anim.startX, anim.midX, anim.endX],
                         top: [anim.startY, anim.midY, anim.endY],
-                        opacity: [1, 1, 0.8, 0],
-                        scale: [1, 0.6, 0.4],
-                        rotate: [0, 15, 20]
+                        opacity: [1, 1, 0.9, 0],
+                        scale: [1, 1.2, 0.3]
                     }}
                     transition={{
-                        duration: 0.8,
-                        ease: [0.34, 1.56, 0.64, 1], // easeOutBack for satisfying bounce
+                        duration: 0.6,
+                        ease: [0.25, 0.1, 0.25, 1], // Custom cubic-bezier for smooth arc
                         times: [0, 0.5, 1],
-                        opacity: { times: [0, 0.6, 0.85, 1] }
+                        opacity: { times: [0, 0.7, 0.9, 1] }
                     }}
                     onAnimationComplete={() => removeAnimation(anim.id)}
-                    className="flying-badge"
+                    className="flying-badge-emoji"
+                    style={{
+                        fontSize: '48px',
+                        filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))',
+                        textShadow: '0 0 20px rgba(251,146,60,0.6)'
+                    }}
                 >
-                    {anim.image ? (
-                        <img
-                            src={anim.image}
-                            alt=""
-                            className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-xl"
-                        />
-                    ) : (
-                        anim.text
-                    )}
+                    {anim.emoji || '🛒'}
                 </motion.div>
             ))}
         </AnimatePresence>
