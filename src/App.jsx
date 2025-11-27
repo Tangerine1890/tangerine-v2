@@ -300,8 +300,10 @@ const App = () => {
       const startY = startRect.top + startRect.height / 2;
       const endX = cartRect.left + cartRect.width / 2;
       const endY = cartRect.top + cartRect.height / 2;
-      const midX = startX + (endX - startX) * 0.55;
-      const midY = Math.min(startY, endY) - 100;
+
+      // Enhanced trajectory: higher arc and smoother curve
+      const midX = startX + (endX - startX) * 0.5;
+      const midY = Math.min(startY, endY) - 150; // Higher arc for better visibility
 
       addAnimation({
         id: Date.now(),
@@ -311,8 +313,9 @@ const App = () => {
         endX, endY
       });
 
+      // Enhanced cart button feedback
       cartButton.classList.add('cart-button-pulse');
-      setTimeout(() => cartButton.classList.remove('cart-button-pulse'), 480);
+      setTimeout(() => cartButton.classList.remove('cart-button-pulse'), 800);
     } catch (error) {
       console.error('animateAdd failed', error);
     }

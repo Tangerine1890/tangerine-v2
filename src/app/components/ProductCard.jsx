@@ -297,7 +297,15 @@ const ProductCardComponent = memo(({
         </div>
 
         <div className="flex gap-3">
-          {isAccessory || product.catalogOnly || product.isPack ? (
+          {product.catalogOnly ? (
+            <button
+              onClick={handleAccessoryCTA}
+              className="w-full glass-cta font-semibold h-[52px] rounded-xl text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+            >
+              <span>👁️</span>
+              <span>Voir détails</span>
+            </button>
+          ) : isAccessory || product.isPack ? (
             <div className="flex gap-2 w-full">
               <button
                 onClick={(e) => handleQuickAdd(1, e)}
