@@ -59,6 +59,17 @@ export const PRODUCTS = [
     desc: 'Cerise tropicale juteuse et sucrée avec finale rafraîchissante. Équilibre parfait.'
   },
   {
+    id: 'ds_tropicali',
+    category: 'doublestatic',
+    name: 'Tropicali',
+    emoji: '🥭',
+    media: ['https://file.garden/aRCOOh-cGER2BR_t/Tropicalids.mp4'],
+    mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/Tropicalids.mp4']),
+    posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1258_converted.avif'], // Reusing existing Tropicali poster as placeholder/fallback
+    thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1241.avif', // Reusing existing Tropicali thumbnail
+    desc: 'Version Double Static du Tropicali. Profil tropical intense, mangue fraîche et fruits exotiques avec une pureté exceptionnelle.'
+  },
+  {
     id: 'ds1',
     category: 'doublestatic',
     name: 'Tropi Tangie',
