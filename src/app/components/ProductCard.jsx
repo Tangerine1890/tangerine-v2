@@ -282,7 +282,7 @@ const ProductCardComponent = memo(({
         <div className="flex items-center gap-2">
           <span className="text-3xl">{product.emoji}</span>
           <h3 className="text-white font-bold text-lg flex-1 line-clamp-2 h-14 flex items-center">{product.name}</h3>
-          {!product.catalogOnly && !product.isPack && (
+          {!product.catalogOnly && (
             <span
               className={`font-bold text-xs px-2 py-1 rounded-lg ${isAccessory
                 ? 'bg-white/10 text-white/80 border border-white/10'
