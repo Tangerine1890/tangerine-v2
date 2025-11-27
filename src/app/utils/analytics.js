@@ -8,7 +8,7 @@ const ensureMetricsStore = () => {
   return window.__mediaMetrics;
 };
 
-const UMAMI_WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID;
+const UMAMI_WEBSITE_ID = '663204ad-b6ac-4abd-8f89-37e6f8c0ed5d';
 const CLARITY_TAG_ID = 'ucgu0pjrv2';
 const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
 const SHOULD_REGISTER_SW = import.meta.env.PROD === true;
