@@ -250,24 +250,6 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, openViewer
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
-            <button
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                if (videoRef.current) {
-                  try {
-                    videoRef.current.pause();
-                    videoRef.current.currentTime = 0;
-                  } catch (error) {
-                    /* ignore */
-                  }
-                }
-                onClose();
-              }}
-              className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white hover:bg-black/80 w-12 h-12 rounded-full transition-all flex items-center justify-center text-2xl z-20 active:scale-90"
-            >
-              ✕
-            </button>
 
             <div className="absolute bottom-4 left-6">
               <div className="flex items-center gap-3">
