@@ -136,7 +136,7 @@ const FullscreenViewerComponent = ({ isOpen, product, startIndex = 0, onClose })
               event.stopPropagation();
               onClose?.();
             }}
-            className="absolute top-8 left-1/2 -translate-x-1/2 glass-dark hover:bg-white/10 text-white/90 hover:text-white px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 backdrop-blur-lg border border-white/10 pointer-events-auto"
+            className="absolute top-12 left-1/2 -translate-x-1/2 glass-dark hover:bg-white/10 text-white/90 hover:text-white px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 backdrop-blur-lg border border-white/10 pointer-events-auto"
             aria-label="Fermer"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
