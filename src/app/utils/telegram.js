@@ -41,10 +41,20 @@ export const initTelegramApp = () => {
   try {
     webApp.ready();
     webApp.expand();
+
+    // Force full screen mode (new Telegram API)
+    if (typeof webApp.requestFullscreen === 'function') {
+      webApp.requestFullscreen();
+    }
+
+    // Disable vertical swipes (prevent accidental close)
+    if (typeof webApp.disableVerticalSwipes === 'function') {
+      webApp.disableVerticalSwipes();
+    }
   } catch (error) {
     if (import.meta.env.DEV) {
       // eslint-disable-next-line no-console
-      console.warn('[Telegram] ready/expand failed', error);
+      console.warn('[Telegram] ready/expand/fullscreen failed', error);
     }
   }
 
