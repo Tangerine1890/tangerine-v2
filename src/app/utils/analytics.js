@@ -9,7 +9,7 @@ const ensureMetricsStore = () => {
 };
 
 const UMAMI_WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID;
-const CLARITY_TAG_ID = import.meta.env.VITE_CLARITY_TAG_ID;
+const CLARITY_TAG_ID = 'ucgu0pjrv2';
 const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
 const SHOULD_REGISTER_SW = import.meta.env.PROD === true;
 
