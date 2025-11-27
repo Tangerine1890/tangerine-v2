@@ -22,61 +22,72 @@ export const Home = ({
 
             <header className="relative z-10 max-w-7xl mx-auto px-4 pb-2 pt-2 telegram-header">
                 {/* Dynamic Hero Card - TANGERINE + CAN 2025 */}
+                {/* Dynamic Hero Card - TANGERINE + CAN 2025 */}
                 <div
-                    className="mb-4 relative overflow-hidden rounded-2xl border border-can-gold/40 shadow-2xl"
+                    className="mb-4 relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl group"
                     style={{
-                        background: 'linear-gradient(135deg, #065f46 0%, #064e3b 25%, #000000 50%, #064e3b 75%, #065f46 100%)',
-                        backgroundSize: '400% 400%',
-                        animation: 'gradientShift 15s ease infinite'
+                        background: '#020405', // Deepest black/blue base
                     }}
                 >
-                    {/* Animated Background Layers */}
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
-                    <div className="absolute inset-0" style={{
-                        background: 'radial-gradient(circle at 20% 50%, rgba(217, 119, 6, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(217, 119, 6, 0.15) 0%, transparent 50%)',
-                        animation: 'pulse 8s ease-in-out infinite'
+                    {/* Animated Background - Darker & More Premium */}
+                    <div className="absolute inset-0 opacity-40" style={{
+                        background: 'radial-gradient(circle at 50% -20%, #065f46 0%, transparent 60%), radial-gradient(circle at 100% 100%, #d97706 0%, transparent 50%)',
+                        animation: 'pulse 8s ease-in-out infinite alternate'
                     }}></div>
 
-                    {/* Floating Glow Orbs */}
-                    <div className="absolute top-0 left-1/4 w-32 h-32 bg-can-gold/20 blur-3xl rounded-full animate-pulse-slow"></div>
-                    <div className="absolute bottom-0 right-1/4 w-40 h-40 bg-emerald-500/15 blur-3xl rounded-full" style={{
-                        animation: 'float 6s ease-in-out infinite'
+                    {/* Dynamic Mesh Gradient Overlay */}
+                    <div className="absolute inset-0 opacity-20 mix-blend-color-dodge" style={{
+                        background: 'conic-gradient(from 0deg at 50% 50%, #000000 0%, #064e3b 25%, #000000 50%, #b45309 75%, #000000 100%)',
+                        animation: 'spin-slow 20s linear infinite'
                     }}></div>
 
-                    <div className="relative z-10 p-4 flex flex-col gap-3">
-                        {/* TANGERINE - Expanded */}
-                        <h1 className="text-3xl font-black gradient-text tracking-[0.25em] leading-tight uppercase text-center drop-shadow-lg">
-                            TANGERINE
-                        </h1>
+                    {/* Noise Texture for Grit */}
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 mix-blend-overlay"></div>
 
-                        {/* CAN 2025 + Button */}
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2.5">
-                                <span className="text-xl drop-shadow-lg">🏆</span>
-                                <h3
-                                    className="font-black text-xl tracking-wider uppercase"
-                                    style={{
-                                        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
-                                        WebkitBackgroundClip: 'text',
-                                        WebkitTextFillColor: 'transparent',
-                                        backgroundClip: 'text',
-                                        filter: 'drop-shadow(0 2px 8px rgba(251, 191, 36, 0.5)) drop-shadow(0 0 20px rgba(251, 191, 36, 0.3))',
-                                        textShadow: '0 0 30px rgba(251, 191, 36, 0.4)'
+                    <div className="relative z-10 p-5 flex flex-col gap-4">
+                        {/* TANGERINE - Floating Header */}
+                        <div className="relative">
+                            <h1 className="text-4xl font-black text-center tracking-[0.2em] leading-none uppercase"
+                                style={{
+                                    background: 'linear-gradient(to bottom, #ffffff 0%, #94a3b8 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))'
+                                }}>
+                                TANGERINE
+                            </h1>
+                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-0.5 bg-gradient-to-r from-transparent via-can-gold to-transparent opacity-50"></div>
+                        </div>
+
+                        {/* CAN 2025 - Framed "Ticket" Style */}
+                        <div className="relative overflow-hidden rounded-xl border border-white/10 bg-white/5 backdrop-blur-md p-1">
+                            {/* Inner Border/Glow */}
+                            <div className="absolute inset-0 rounded-xl border border-white/5 pointer-events-none"></div>
+                            <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#020405] rounded-full border-r border-white/10"></div>
+                            <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#020405] rounded-full border-l border-white/10"></div>
+
+                            <div className="flex items-center justify-between px-4 py-2">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold text-can-gold/80 tracking-widest uppercase mb-0.5">Événement</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xl animate-bounce-subtle">🏆</span>
+                                        <h3 className="font-black text-2xl tracking-wide italic text-white drop-shadow-md">
+                                            CAN <span className="text-can-gold">2025</span>
+                                        </h3>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCategoryChange('packs_can');
                                     }}
+                                    className="relative overflow-hidden px-4 py-2 rounded-lg bg-gradient-to-r from-can-gold to-amber-600 text-white font-bold text-xs tracking-wider uppercase shadow-lg hover:scale-105 active:scale-95 transition-all group-hover:shadow-can-gold/20"
                                 >
-                                    CAN 2025
-                                </h3>
+                                    <span className="relative z-10">Voir Packs</span>
+                                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                                </button>
                             </div>
-
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleCategoryChange('packs_can');
-                                }}
-                                className="px-5 py-2 rounded-full bg-gradient-to-r from-can-gold via-amber-500 to-can-copper text-white font-bold text-sm tracking-wide shadow-[0_0_20px_rgba(251,191,36,0.4)] hover:shadow-[0_0_30px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 transition-all duration-200 border border-amber-400/30"
-                            >
-                                Voir Packs
-                            </button>
                         </div>
                     </div>
                 </div>
