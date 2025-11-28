@@ -249,6 +249,7 @@ const ProductCardComponent = memo(({
             src={product.thumbnail}
             loading={imageLoading}
             fetchpriority={imageFetchPriority}
+            decoding="async"
             alt={product.name}
             className={`absolute inset-0 w-full h-full object-cover transition-all duration-300 ${videoState === 'loaded' ? 'opacity-0' : 'opacity-100'
               }`}
