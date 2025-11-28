@@ -126,9 +126,39 @@ const CartDrawerComponent = ({
               </div>
               <button
                 onClick={onClose}
-                className="text-white/60 hover:text-white text-4xl leading-none transition-all"
+                className="group relative z-50"
+                aria-label="Fermer"
               >
-                ×
+                <div className="relative">
+                  {/* Glow effect on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-500/30 to-pink-500/30 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+
+                  {/* Main button container */}
+                  <div className="relative px-4 py-3 rounded-2xl glass backdrop-blur-2xl border border-white/10 shadow-2xl group-hover:border-orange-400/40 group-hover:bg-gradient-to-br group-hover:from-orange-500/10 group-hover:to-pink-500/10 transition-all duration-300 active:scale-95">
+                    <div className="flex items-center gap-2">
+                      {/* Animated chevron icon */}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-white/70 group-hover:text-white group-hover:-translate-x-0.5 transition-all duration-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 19l-7-7 7-7"
+                        />
+                      </svg>
+
+                      {/* Text label */}
+                      <span className="text-xs font-semibold text-white/70 group-hover:text-white transition-colors duration-300 tracking-wide">
+                        RETOUR
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </button>
             </div>
 
