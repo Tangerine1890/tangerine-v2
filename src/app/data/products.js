@@ -123,6 +123,7 @@ export const PRODUCTS = [
     mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/grape.mp4']),
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1246.avif'],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1246.avif',
+    oldPrice: 8,
     desc: 'Raisin doux mélangé à des notes de biscuits croquants. Harmonie subtile et saveur élégante.'
   },
   // --- PACKS CAN 2025 ---

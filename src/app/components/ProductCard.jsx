@@ -300,16 +300,30 @@ const ProductCardComponent = memo(({
           <span className="text-3xl">{product.emoji}</span>
           <h3 className="text-white font-bold text-lg flex-1 line-clamp-2 h-14 flex items-center">{product.name}</h3>
           {!product.catalogOnly && (
-            <span
-              className={`font-bold text-xs px-2 py-1 rounded-lg ${isAccessory
-                ? 'bg-white/10 text-white/80 border border-white/10'
-                : product.isPack
-                  ? 'text-can-gold bg-can-gold/20 border border-can-gold/30'
-                  : 'text-emerald-300 bg-emerald-500/20'
-                }`}
-            >
-              {isAccessory ? 'Prix à définir' : product.isPack ? `${product.price}€` : `${PRICES[product.category]}€/g`}
-            </span>
+            <div className="flex gap-1.5">
+              {product.oldPrice && (
+                <span className="font-bold text-xs px-2 py-1 rounded-lg text-white bg-red-500/80 animate-pulse whitespace-nowrap">
+                  📉 -{Math.round(((product.oldPrice - PRICES[product.category]) / product.oldPrice) * 100)}%
+                </span>
+              )}
+              <span
+                className={`font-bold text-xs px-2 py-1 rounded-lg ${isAccessory
+                  ? 'bg-white/10 text-white/80 border border-white/10'
+                  : product.isPack
+                    ? 'text-can-gold bg-can-gold/20 border border-can-gold/30'
+                    : 'text-emerald-300 bg-emerald-500/20'
+                  }`}
+              >
+                {isAccessory ? 'Prix à définir' : product.isPack ? `${product.price}€` : (
+                  product.oldPrice ? (
+                    <span className="flex items-center gap-1">
+                      <span className="line-through opacity-50 text-[10px] decoration-red-500/50">{product.oldPrice}€</span>
+                      <span>{PRICES[product.category]}€/g</span>
+                    </span>
+                  ) : `${PRICES[product.category]}€/g`
+                )}
+              </span>
+            </div>
           )}
         </div>
 
@@ -348,7 +362,14 @@ const ProductCardComponent = memo(({
               >
                 {qty}g
                 <br />
-                <span className="block text-xs opacity-90 mt-0.5">{PRICES[product.category] * qty}€</span>
+                <span className="block text-xs opacity-90 mt-0.5">
+                  {product.oldPrice && (
+                    <span className="line-through text-white/50 mr-1 decoration-red-500/50">
+                      {product.oldPrice * qty}€
+                    </span>
+                  )}
+                  {PRICES[product.category] * qty}€
+                </span>
               </button>
             ))
           )}
