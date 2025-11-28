@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tangerine Business Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-leaf"></i>
+                <span>Tangerine<span class="highlight">Biz</span></span>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active" data-tab="overview"><i class="fa-solid fa-chart-pie"></i> Vue d'ensemble</li>
+                    <li data-tab="orders"><i class="fa-solid fa-receipt"></i> Commandes</li>
+                    <li data-tab="inventory"><i class="fa-solid fa-boxes-stacked"></i> Stock</li>
+                    <li data-tab="financials"><i class="fa-solid fa-wallet"></i> Finances</li>
+                </ul>
+            </nav>
+            <div class="user-profile">
+                <div class="avatar">O</div>
+                <div class="info">
+                    <span class="name">Omar Cherqaoui</span>
+                    <span class="role">Admin</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1>Tableau de Bord</h1>
+                <div class="date-display" id="currentDate"></div>
+            </header>
+
+            <!-- Overview Section -->
+            <section id="overview" class="tab-content active">
+                <div class="stats-grid">
+                    <!-- Revenue -->
+                    <div class="stat-card premium-card">
+                        <div class="icon-box revenue"><i class="fa-solid fa-sack-dollar"></i></div>
+                        <div class="stat-info">
+                            <h3>Chiffre d'Affaires</h3>
+                            <p class="value" id="totalRevenue">0 €</p>
+                            <span class="subtext">Total Ventes</span>
+                        </div>
+                    </div>
+
+                    <!-- Caisse Actuelle -->
+                    <div class="stat-card premium-card">
+                        <div class="icon-box stock"><i class="fa-solid fa-wallet"></i></div>
+                        <div class="stat-info">
+                            <h3>Caisse Actuelle</h3>
+                            <p class="value" id="cashInHand">0 €</p>
+                            <span class="subtext">Disponible</span>
+                        </div>
+                    </div>
+
+                    <!-- Grams Sold -->
+                    <div class="stat-card premium-card">
+                        <div class="icon-box orders"><i class="fa-solid fa-weight-hanging"></i></div>
+                        <div class="stat-info">
+                            <h3>Volume Vendu</h3>
+                            <p class="value" id="gramsSold">0g</p>
+                            <span class="subtext">Total Grammes</span>
+                        </div>
+                    </div>
+
+                    <!-- Avg Price -->
+                    <div class="stat-card premium-card">
+                        <div class="icon-box stock" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;"><i
+                                class="fa-solid fa-tag"></i></div>
+                        <div class="stat-info">
+                            <h3>Prix Moyen</h3>
+                            <p class="value" id="avgPrice">0 €/g</p>
+                            <span class="subtext">Performance</span>
+                        </div>
+                    </div>
+
+                    <!-- Team Consumption -->
+                    <div class="stat-card premium-card">
+                        <div class="icon-box consumption" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Conso. Équipe</h3>
+                            <p class="value" id="teamConso">0g</p>
+                            <span class="subtext">Consommation</span>
+                        </div>
+                    </div>
+
+                    <!-- Orders Count -->
+                    <div class="stat-card premium-card">
+                        <div class="icon-box orders"><i class="fa-solid fa-cart-shopping"></i></div>
+                        <div class="stat-info">
+                            <h3>Commandes</h3>
+                            <p class="value" id="totalOrders">0</p>
+                            <span class="subtext" id="pendingOrders">0 En attente</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <!-- Top Products (List) -->
+                    <div class="chart-container narrow glass-panel">
+                        <h2>Top Produits</h2>
+                        <div id="topProductsList" class="top-products-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Placeholder for future stats -->
+                    <div class="chart-container wide glass-panel"
+                        style="display: flex; align-items: center; justify-content: center; opacity: 0.5;">
+                        <div style="text-align: center;">
+                            <i class="fa-solid fa-chart-line"
+                                style="font-size: 2rem; margin-bottom: 1rem; color: var(--text-secondary);"></i>
+                            <p>Plus de stats bientôt...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Orders Section -->
+            <section id="orders" class="tab-content">
+                <header>
+                    <h1>Commandes</h1>
+                    <div class="search-bar">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" id="orderSearch" placeholder="Rechercher une commande...">
+                    </div>
+                </header>
+
+                <div id="ordersGrid" class="orders-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Inventory Section -->
+            <section id="inventory" class="tab-content">
+                <h2>État du Stock</h2>
+                <div class="inventory-grid" id="inventoryGrid">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Financials Section -->
+            <section id="financials" class="tab-content">
+                <h2>Vue Financière</h2>
+                <div class="financials-wrapper">
+                    <div class="financial-card expenses">
+                        <h3><i class="fa-solid fa-money-bill-transfer"></i> Achats & Dépenses</h3>
+                        <div id="expensesList"></div>
+                    </div>
+                    <div class="financial-card summary">
+                        <h3><i class="fa-solid fa-scale-balanced"></i> Bilan</h3>
+                        <div class="profit-calc">
+                            <div class="row">
+                                <span>Total Ventes</span>
+                                <span class="amount positive" id="finRevenue">0 DH</span>
+                            </div>
+                            <div class="row">
+                                <span>Total Payé Fournisseurs</span>
+                                <span class="amount negative" id="finExpenses">0 DH</span>
+                            </div>
+                            <div class="row">
+                                <span>Emprunts (Omar)</span>
+                                <span class="amount negative" id="finLoans">0 DH</span>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="row total">
+                                <span>Solde Caisse</span>
+                                <span class="amount" id="finCashFlow">0 DH</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="data.js"></script>
+    <script src="analytics.js"></script>
+</body>
+
+</html>

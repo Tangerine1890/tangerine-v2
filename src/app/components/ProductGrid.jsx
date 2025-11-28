@@ -1,4 +1,5 @@
 import { ProductCard } from './ProductCard.jsx';
+import { ProductCardSkeleton } from './ProductCardSkeleton.jsx';
 
 export const ProductGrid = ({
     products,
@@ -7,7 +8,21 @@ export const ProductGrid = ({
     onViewDetails,
     wishlist,
     onToggleWishlist,
+    isLoading = false,
 }) => {
+    // Show skeletons during loading
+    if (isLoading) {
+        return (
+            <div className="relative">
+                <div className="flex gap-5 overflow-x-auto pb-6 snap-x scroll-smooth" data-product-scroll>
+                    {[1, 2, 3].map((i) => (
+                        <ProductCardSkeleton key={i} />
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
     if (products.length === 0) {
         return (
             <div className="text-center py-20 animate-fade-in-up">
