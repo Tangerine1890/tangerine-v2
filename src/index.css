@@ -5,19 +5,24 @@
 @tailwind utilities;
 
 :root {
-  --tg-bg-color: #05090b;
-  --tg-text-color: #f8fafc;
-  --tg-hint-color: #94a3b8;
+  /* Map legacy variables to new tokens */
+  --tg-bg-color: var(--color-bg-dark);
+  --tg-text-color: var(--color-text-primary);
+  --tg-hint-color: var(--color-text-secondary);
   --tg-link-color: #38bdf8;
-  --tg-button-color: #34d399;
-  --tg-button-text-color: #05090b;
-  --tg-secondary-bg-color: #0f172a;
+  /* Keep specific link color */
+  --tg-button-color: var(--color-primary);
+  --tg-button-text-color: var(--color-bg-dark);
+  --tg-secondary-bg-color: var(--color-bg-dark-alt);
   --tg-color-scheme: dark;
   --telegram-top-bar-height: 0px;
+
+  /* CTA Colors mapped to tokens */
   --cta-green-start: #1dd47f;
-  --cta-green-mid: #0fbf6a;
+  /* Keep specific gradients */
+  --cta-green-mid: var(--color-primary);
   --cta-green-end: #059669;
-  --cta-orange: #f97316;
+  --cta-orange: var(--color-secondary);
   --cta-accent-orange: rgba(249, 115, 22, 0.28);
   --cta-accent-glow: rgba(249, 115, 22, 0.24);
   --cta-ring: rgba(250, 204, 21, 0.8);
