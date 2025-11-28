@@ -10,9 +10,17 @@ import { ParticlesBackground } from './ParticlesBackground.jsx';
 import { FlyingBadge } from './FlyingBadge.jsx';
 import { Notification } from './Notification.jsx';
 import { Confetti } from './Confetti.jsx';
-import { CartDrawer } from './CartDrawer.jsx';
 import { LoadingScreen } from './LoadingScreen.jsx';
 
+// Loading Fallback for lazy-loaded modals
+const LoadingFallback = () => (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="w-12 h-12 border-3 border-orange-500 border-t-transparent rounded-full spinner" />
+    </div>
+);
+
+// Lazy-loaded modals and drawers
+const CartDrawer = lazy(() => import('./CartDrawer.jsx'));
 const ConfirmationModal = lazy(() => import('./ConfirmationModal.jsx'));
 const ContactModal = lazy(() => import('./ContactModal.jsx'));
 const ProductDetailModal = lazy(() => import('./ProductDetailModal.jsx'));
@@ -179,23 +187,25 @@ export const MainLayout = ({
                 </button>
             </nav>
 
-            <CartDrawer
-                isOpen={isCartOpen}
-                onClose={() => setCartOpen(false)}
-                cart={cart}
-                onUpdateQuantity={handleUpdateQuantity}
-                onRemoveItem={handleRemoveFromCart}
-                onCheckout={handleCheckoutClick}
-                deliveryCity={deliveryCity}
-                onDeliveryCityChange={setDeliveryCity}
-                paymentMethod={paymentMethod}
-                onPaymentMethodChange={setPaymentMethod}
-                appliedPromo={appliedPromo}
-                onApplyPromo={setAppliedPromo}
-                onRemovePromo={() => setAppliedPromo('')}
-            />
+            <Suspense fallback={<LoadingFallback />}>
+                <CartDrawer
+                    isOpen={isCartOpen}
+                    onClose={() => setCartOpen(false)}
+                    cart={cart}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    onRemoveItem={handleRemoveFromCart}
+                    onCheckout={handleCheckoutClick}
+                    deliveryCity={deliveryCity}
+                    onDeliveryCityChange={setDeliveryCity}
+                    paymentMethod={paymentMethod}
+                    onPaymentMethodChange={setPaymentMethod}
+                    appliedPromo={appliedPromo}
+                    onApplyPromo={setAppliedPromo}
+                    onRemovePromo={() => setAppliedPromo('')}
+                />
+            </Suspense>
 
-            <Suspense fallback={null}>
+            <Suspense fallback={<LoadingFallback />}>
                 <ConfirmationModal
                     isOpen={showConfirmation}
                     onConfirm={handleConfirmOrder}
