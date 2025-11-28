@@ -1,3 +1,5 @@
+import { retryWithBackoff } from './retry.js';
+
 const hasWindow = () => typeof window !== 'undefined';
 
 const CONNECTION_WEIGHT = {
@@ -72,10 +74,21 @@ class VideoManager {
 
     this.loading.add(src);
     try {
-      const response = await fetch(src, options.fetchOptions);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
+      const objectUrl = await retryWithBackoff(
+        async () => {
+          const response = await fetch(src, options.fetchOptions);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const blob = await response.blob();
+          return URL.createObjectURL(blob);
+        },
+        {
+          maxRetries: 3,
+          initialDelay: 500,
+          onRetry: (attempt, error) => {
+            console.log(`Retrying video load (attempt ${attempt}/3):`, src, error.message);
+          },
+        }
+      );
       this.cache.set(src, { blob: objectUrl, error: null });
       return objectUrl;
     } catch (error) {
