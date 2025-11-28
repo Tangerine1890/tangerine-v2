@@ -234,14 +234,23 @@ const ProductCardComponent = memo(({
             <span className="product-badge">{product.badge}</span>
           </div>
         )}
-        <img
-          src={product.thumbnail}
-          loading={imageLoading}
-          fetchpriority={imageFetchPriority}
-          alt={product.name}
-          className={`absolute inset-0 w-full h-full object-cover transition-all duration-300 ${videoState === 'loaded' ? 'opacity-0' : 'opacity-100'
-            }`}
-        />
+        {/* AVIF & WebP Support */}
+        <picture>
+          {product.thumbnail.endsWith('.jpg') || product.thumbnail.endsWith('.png') ? (
+            <>
+              <source srcSet={product.thumbnail.replace(/\.(jpg|png)$/, '.avif')} type="image/avif" />
+              <source srcSet={product.thumbnail.replace(/\.(jpg|png)$/, '.webp')} type="image/webp" />
+            </>
+          ) : null}
+          <img
+            src={product.thumbnail}
+            loading={imageLoading}
+            fetchpriority={imageFetchPriority}
+            alt={product.name}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-300 ${videoState === 'loaded' ? 'opacity-0' : 'opacity-100'
+              }`}
+          />
+        </picture>
 
         {product.media?.[0] && (
           <video
