@@ -15,11 +15,8 @@ import { useCartLogic } from './hooks/useCartLogic.js';
 import { useTMALogic } from './hooks/useTMALogic.js';
 import { useDataLoad } from './hooks/useDataLoad.js';
 import { getVideoManager } from './app/utils/videoManager.js';
-import {
-  disableUmamiForOwner,
-  scheduleDeferredAnalyticsLoad,
-  trackEvent,
-} from './app/utils/analytics.js';
+// Analytics utils will be loaded dynamically
+// import { ... } from './app/utils/analytics.js';
 
 // Constants & Data
 import {
@@ -133,18 +130,19 @@ const App = () => {
   }, [isLoading]);
 
   useEffect(() => {
-    let cleanup;
-    try {
-      const disabled = disableUmamiForOwner();
-      if (!disabled) {
-        cleanup = scheduleDeferredAnalyticsLoad();
+    const initAnalytics = async () => {
+      try {
+        const { disableUmamiForOwner, scheduleDeferredAnalyticsLoad } = await import('./app/utils/analytics.js');
+        const disabled = disableUmamiForOwner();
+        if (!disabled) {
+          scheduleDeferredAnalyticsLoad();
+        }
+      } catch (error) {
+        console.warn('Deferred analytics init failed', error);
       }
-    } catch (error) {
-      console.warn('Deferred analytics init failed', error);
-    }
-    return () => {
-      if (typeof cleanup === 'function') cleanup();
     };
+
+    initAnalytics();
   }, []);
 
   // Particles Logic
@@ -232,11 +230,14 @@ const App = () => {
       return;
     }
 
-    welcomeTimerRef.current = setTimeout(() => {
+    welcomeTimerRef.current = setTimeout(async () => {
       welcomeTimerRef.current = null;
       setShowWelcome(true);
       markWelcomeSeen();
-      trackEvent('welcome_shown');
+      try {
+        const { trackEvent } = await import('./app/utils/analytics.js');
+        trackEvent('welcome_shown');
+      } catch (e) { /* ignore */ }
     }, 200);
 
     welcomeUnmountRef.current = setTimeout(() => {

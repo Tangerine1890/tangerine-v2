@@ -1,29 +1,29 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import * as Sentry from "@sentry/react";
 import './design/tokens.css';
 import './index.css';
 import App from './App.jsx';
 
-// Initialize Sentry for error monitoring
-Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN,
-  environment: import.meta.env.MODE, // "development" or "production"
-  integrations: [
-    Sentry.browserTracingIntegration(),
-    Sentry.replayIntegration({
-      maskAllText: false,
-      blockAllMedia: false,
-    }),
-  ],
-  // Performance Monitoring
-  tracesSampleRate: import.meta.env.MODE === 'production' ? 0.1 : 1.0, // 10% in prod, 100% in dev
-  // Session Replay
-  replaysSessionSampleRate: 0.1, // 10% of sessions
-  replaysOnErrorSampleRate: 1.0, // 100% of sessions with errors
-  // Don't send errors in development unless explicitly testing
-  enabled: import.meta.env.MODE === 'production' || import.meta.env.VITE_SENTRY_ENABLED === 'true',
-});
+// Lazy load Sentry in production
+if (import.meta.env.MODE === 'production') {
+  import('@sentry/react').then((Sentry) => {
+    Sentry.init({
+      dsn: import.meta.env.VITE_SENTRY_DSN,
+      environment: import.meta.env.MODE,
+      integrations: [
+        Sentry.browserTracingIntegration(),
+        Sentry.replayIntegration({
+          maskAllText: false,
+          blockAllMedia: false,
+        }),
+      ],
+      tracesSampleRate: 0.1,
+      replaysSessionSampleRate: 0.1,
+      replaysOnErrorSampleRate: 1.0,
+      enabled: true,
+    });
+  });
+}
 
 // Prevent Web3 library conflicts
 if (typeof window !== 'undefined' && !window.ethereum) {
