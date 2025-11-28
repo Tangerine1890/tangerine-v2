@@ -229,7 +229,7 @@ body {
   font-weight: 700;
   font-size: 1.2rem;
   letter-spacing: 0.04em;
-  padding: 0.5rem 0.8rem;
+  padding: var(--space-1) var(--space-2);
   border-radius: 999px;
   border: 2px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.6), 0 0 30px rgba(249, 115, 22, 0.5);
@@ -268,7 +268,7 @@ body {
   color: #ffffff;
   background: linear-gradient(135deg, #dc2626, #ea580c);
   border-radius: 0.5rem;
-  padding: 0.4rem 0.75rem;
+  padding: var(--space-1) var(--space-2);
   box-shadow:
     0 4px 16px rgba(220, 38, 38, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.2),
@@ -703,7 +703,7 @@ input:focus-visible {
   top: calc(1.25rem + env(safe-area-inset-top, 0px));
   left: 50%;
   transform: translate(-50%, -20px) scale(0.96);
-  padding: 0.85rem 1.4rem;
+  padding: var(--space-2) var(--space-3);
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -994,7 +994,7 @@ input:focus-visible {
 
 .search-highlight {
   background: linear-gradient(135deg, rgba(249, 115, 22, 0.3), rgba(236, 72, 153, 0.3));
-  padding: 0 2px;
+  padding: 0 var(--space-1);
   border-radius: 2px;
 }
 
