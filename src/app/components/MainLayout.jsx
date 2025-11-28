@@ -12,13 +12,6 @@ import { Notification } from './Notification.jsx';
 import { Confetti } from './Confetti.jsx';
 import { LoadingScreen } from './LoadingScreen.jsx';
 
-// Loading Fallback for lazy-loaded modals
-const LoadingFallback = () => (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
-        <div className="w-12 h-12 border-3 border-orange-500 border-t-transparent rounded-full spinner" />
-    </div>
-);
-
 // Lazy-loaded modals and drawers
 const CartDrawer = lazy(() => import('./CartDrawer.jsx'));
 const ConfirmationModal = lazy(() => import('./ConfirmationModal.jsx'));
@@ -187,7 +180,7 @@ export const MainLayout = ({
                 </button>
             </nav>
 
-            <Suspense fallback={<LoadingFallback />}>
+            <Suspense fallback={null}>
                 <CartDrawer
                     isOpen={isCartOpen}
                     onClose={() => setCartOpen(false)}
@@ -205,7 +198,7 @@ export const MainLayout = ({
                 />
             </Suspense>
 
-            <Suspense fallback={<LoadingFallback />}>
+            <Suspense fallback={null}>
                 <ConfirmationModal
                     isOpen={showConfirmation}
                     onConfirm={handleConfirmOrder}
