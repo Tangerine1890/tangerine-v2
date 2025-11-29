@@ -23,15 +23,9 @@ export const CategoryList = ({ selectedCategory, onCategoryChange, scrollRef }) 
                                     ? `bg-gradient-to-r ${category.gradient} text-white shadow-[0_4px_16px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.1)] scale-105 border border-white/20`
                                     : `bg-gradient-to-br from-white/8 to-white/4 text-white/70 border border-white/10 hover:from-white/12 hover:to-white/8 hover:text-white hover:border-white/20 hover:scale-102 shadow-sm`
                                 }
-                                ${category.isNew && !isActive ? 'animate-pulse' : ''}
+                                ${category.isNew && !isActive ? 'shadow-[0_0_20px_rgba(234,179,8,0.4),0_0_40px_rgba(234,179,8,0.2)] animate-pulse' : ''}
                             `}
                         >
-                            {category.isNew && (
-                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping" />
-                            )}
-                            {category.isNew && (
-                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
-                            )}
                             <span className={`mr-2 text-base transition-all duration-300 ${isActive ? 'scale-110 inline-block drop-shadow-lg' : ''}`}>
                                 {category.emoji}
                             </span>
