@@ -124,7 +124,9 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, onAnimateA
     }
     const numValue = parseInt(value, 10);
     if (!Number.isNaN(numValue)) {
-      setSelectedQuantity(numValue);
+      // Validation: Ensure quantity is within bounds (0 to 1000)
+      // We allow 0 temporarily for typing, but min is enforced on blur/submit
+      setSelectedQuantity(Math.min(1000, Math.max(0, numValue)));
     }
   };
 

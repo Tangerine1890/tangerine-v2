@@ -65,7 +65,8 @@ const CartDrawerComponent = ({
     const isUnitBased = item.product.isPack || item.product.category === 'accessoires';
     const unitPrice = isUnitBased ? item.product.price : PRICES[item.product.category];
     const minQty = isUnitBased ? 1 : MIN_QUANTITY;
-    const newQuantity = Math.max(minQty, item.quantity + delta);
+    // Validation: Ensure quantity is within bounds (minQty to 1000)
+    const newQuantity = Math.min(1000, Math.max(minQty, item.quantity + delta));
 
     onUpdateQuantity(index, newQuantity, unitPrice * newQuantity);
     trackEvent('cart_quantity_change', {
