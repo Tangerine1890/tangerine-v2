@@ -33,6 +33,7 @@ import { PRODUCTS } from './app/data/products.js';
 // Components
 import { MainLayout } from './app/components/MainLayout.jsx';
 import { Home } from './app/pages/Home.jsx';
+import { WebVitalsReporter } from './app/components/WebVitalsReporter.jsx';
 
 const App = () => {
   // 1. Initialize Data & Logic
@@ -432,48 +433,51 @@ const App = () => {
   }, [setViewer]);
 
   return (
-    <MainLayout
-      isLoading={isLoading}
-      auroraRef={auroraRef}
-      cartButtonRef={cartButtonRef}
-      isTelegramIOS={isTelegramIOS}
-      showParticles={showParticles}
-      welcomeRendered={welcomeRendered}
-      showWelcome={showWelcome}
-      handleDismissWelcome={handleDismissWelcome}
-      homeScreenStatus={homeScreenStatus}
-      handleAddToHomeScreen={handleAddToHomeScreen}
-      handleThemeToggle={handleThemeToggle}
-      horizontalScrollProgress={horizontalScrollProgress}
-      handleCategoryChange={handleCategoryChange}
-      confettiTrigger={confettiTrigger}
-
-      handleUpdateQuantity={handleUpdateQuantity}
-      handleRemoveFromCart={handleRemoveFromCart}
-      handleCheckoutClick={handleCheckoutClick}
-
-      setDeliveryCity={setDeliveryCity}
-      setPaymentMethod={setPaymentMethod}
-      setAppliedPromo={setAppliedPromo}
-
-      handleAddToCart={handleAddToCart}
-      openViewer={openViewer}
-      closeViewer={closeViewer}
-      handleConfirmOrder={handleConfirmOrder}
-    >
-      <Home
-        theme={theme}
-        selectedCategory={selectedCategory}
+    <>
+      <WebVitalsReporter />
+      <MainLayout
+        isLoading={isLoading}
+        auroraRef={auroraRef}
+        cartButtonRef={cartButtonRef}
+        isTelegramIOS={isTelegramIOS}
+        showParticles={showParticles}
+        welcomeRendered={welcomeRendered}
+        showWelcome={showWelcome}
+        handleDismissWelcome={handleDismissWelcome}
+        homeScreenStatus={homeScreenStatus}
+        handleAddToHomeScreen={handleAddToHomeScreen}
+        handleThemeToggle={handleThemeToggle}
+        horizontalScrollProgress={horizontalScrollProgress}
         handleCategoryChange={handleCategoryChange}
-        productsToDisplay={productsToDisplay}
+        confettiTrigger={confettiTrigger}
+
+        handleUpdateQuantity={handleUpdateQuantity}
+        handleRemoveFromCart={handleRemoveFromCart}
+        handleCheckoutClick={handleCheckoutClick}
+
+        setDeliveryCity={setDeliveryCity}
+        setPaymentMethod={setPaymentMethod}
+        setAppliedPromo={setAppliedPromo}
+
         handleAddToCart={handleAddToCart}
-        handleAnimateAdd={handleAnimateAdd}
-        setSelectedProduct={setSelectedProduct}
-        wishlist={wishlist}
-        handleToggleWishlist={handleToggleWishlist}
-        categoryScrollRef={categoryScrollRef}
-      />
-    </MainLayout>
+        openViewer={openViewer}
+        closeViewer={closeViewer}
+        handleConfirmOrder={handleConfirmOrder}
+      >
+        <Home
+          theme={theme}
+          selectedCategory={selectedCategory}
+          handleCategoryChange={handleCategoryChange}
+          productsToDisplay={productsToDisplay}
+          handleAddToCart={handleAddToCart}
+          handleAnimateAdd={handleAnimateAdd}
+          setSelectedProduct={setSelectedProduct}
+          wishlist={wishlist}
+          handleToggleWishlist={handleToggleWishlist}
+          categoryScrollRef={categoryScrollRef}
+        />
+      </MainLayout>
+    </>
   );
 };
 
