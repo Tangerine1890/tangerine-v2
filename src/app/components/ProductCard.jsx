@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { registerTangerineComponent } from '../../lib/registry.js';
 import {
   PRICES,
@@ -30,8 +30,6 @@ const ProductCardComponent = memo(({
   style,
   className,
 }) => {
-  const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [0, 500], [0, -30]);
   const [videoState, setVideoState] = useState('thumbnail');
   const [isVisible, setIsVisible] = useState(isInitiallyVisible);
   const videoRef = useRef(null);
@@ -221,8 +219,7 @@ const ProductCardComponent = memo(({
           onToggle={onToggleWishlist}
         />
       )}
-      <motion.div
-        style={{ y }}
+      <div
         onClick={() => {
           onViewDetails(product);
           trackEvent('product_detail_view', { product: product.name });
@@ -294,7 +291,7 @@ const ProductCardComponent = memo(({
             👁️ Détails
           </span>
         </div>
-      </motion.div>
+      </div>
 
       <div className="p-4 flex flex-col gap-3 bg-black/20 backdrop-blur-sm">
         <div className="flex items-center gap-2">
