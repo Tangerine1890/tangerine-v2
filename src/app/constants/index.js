@@ -10,9 +10,9 @@ export const PRICES = PRICES_PER_CATEGORY;
 export const DELIVERY_PRICES = {
   rabat: { name: 'Rabat', price: 0, emoji: '👑', featured: true, estimatedDays: 1 },
   casablanca: { name: 'Casablanca', price: 50, emoji: '🏙️', estimatedDays: 1 },
-  marrakech: { name: 'Marrakech', price: 150, emoji: '🕌', estimatedDays: 2 },
+  marrakech: { name: 'Marrakech', price: 100, emoji: '🕌', estimatedDays: 2 },
   agadir: { name: 'Agadir', price: 200, emoji: '🏖️', estimatedDays: 2 },
-  tangier: { name: 'Tanger', price: 100, emoji: '⛵', estimatedDays: 1 },
+  tangier: { name: 'Tanger', price: 70, emoji: '⛵', estimatedDays: 1 },
 };
 
 export const PROMO_CODES = {
