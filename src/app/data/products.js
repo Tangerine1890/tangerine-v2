@@ -67,7 +67,8 @@ export const PRODUCTS = [
     mediaSources: withMediaSources(['https://file.garden/aRCOOh-cGER2BR_t/Tropicalids.mp4']),
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/IMG_1258_converted.avif'], // Reusing existing Tropicali poster as placeholder/fallback
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/IMG_1241.avif', // Reusing existing Tropicali thumbnail
-    desc: 'Version Double Static du Tropicali. Profil tropical intense, mangue fraîche et fruits exotiques avec une pureté exceptionnelle.'
+    desc: 'Version Double Static du Tropicali. Profil tropical intense, mangue fraîche et fruits exotiques avec une pureté exceptionnelle.',
+    badge: 'NOUVEAU ✨'
   },
   {
     id: 'ds1',
