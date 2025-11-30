@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 coverage/
 Analyse_AI/
+TangerineStudio/
+send_broadcast.sh
+send_notification_all.sh
+tangerine-old/
