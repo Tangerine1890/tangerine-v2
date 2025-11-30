@@ -148,6 +148,28 @@ const App = () => {
     };
   }, []);
 
+  // Track notification clicks via UTM parameters
+  useEffect(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const utmSource = urlParams.get('utm_source');
+      const utmCampaign = urlParams.get('utm_campaign');
+
+      if (utmSource === 'telegram' && utmCampaign) {
+        // Track in Umami Analytics
+        trackEvent('notification_click', {
+          campaign: utmCampaign,
+          timestamp: new Date().toISOString()
+        });
+
+        console.log('📊 Notification click tracked:', utmCampaign);
+      }
+    } catch (error) {
+      console.warn('UTM tracking failed', error);
+    }
+  }, []);
+
+
   // Particles Logic
   useEffect(() => {
     try {
