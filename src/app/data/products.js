@@ -173,7 +173,7 @@ export const PRODUCTS = [
     name: 'Pack MVP',
     emoji: '🏆',
     price: 360,
-    originalPrice: 390,
+    originalPrice: 415,
     isPack: true,
     weight: 30,
     badge: 'STOCK LIMITÉ ⚠️',
