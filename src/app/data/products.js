@@ -140,11 +140,11 @@ export const PRODUCTS = [
     media: ['https://file.garden/aRCOOh-cGER2BR_t/D%C3%A9couverte.mp4'],
     posters: ['https://file.garden/aRCOOh-cGER2BR_t/D%C3%A9couverte.mp4'],
     thumbnail: 'https://file.garden/aRCOOh-cGER2BR_t/D%C3%A9couverte.mp4',
+    originalPrice: 165,
     desc: 'Profitez de cette sélection spéciale CAN 2025.',
     details: [
       '7.5g Fresh Frozen',
-      '7.5g Double Static',
-      'Sélection Variée'
+      '7.5g Double Static'
     ]
   },
   {
@@ -153,6 +153,7 @@ export const PRODUCTS = [
     name: 'Pack Supporter',
     emoji: '⚽',
     price: 200,
+    originalPrice: 240,
     isPack: true,
     weight: 20,
     badge: 'STOCK LIMITÉ ⚠️',
@@ -172,6 +173,7 @@ export const PRODUCTS = [
     name: 'Pack MVP',
     emoji: '🏆',
     price: 360,
+    originalPrice: 390,
     isPack: true,
     weight: 30,
     badge: 'STOCK LIMITÉ ⚠️',

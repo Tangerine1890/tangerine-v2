@@ -343,6 +343,21 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, onAnimateA
                 ))}
               </div>
               <p className="text-white/60 text-sm italic px-2">{product.desc}</p>
+
+              {product.originalPrice && (
+                <div className="glass p-3 rounded-xl flex items-center justify-between mt-2">
+                  <div className="flex items-center gap-3">
+                    <p className="text-white/60 text-sm">Prix Spécial</p>
+                    <div className="flex items-center gap-2">
+                      <span className="line-through text-white/50 text-sm decoration-red-500/50">{product.originalPrice}€</span>
+                      <span className="gradient-text font-bold text-xl">{product.price}€</span>
+                    </div>
+                  </div>
+                  <span className="font-bold text-xs px-2 py-1 rounded-lg text-white bg-red-500/80 animate-pulse">
+                    -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                  </span>
+                </div>
+              )}
             </div>
           ) : (
             <div>
@@ -366,7 +381,13 @@ const ProductDetailModalComponent = ({ product, onClose, onAddToCart, onAnimateA
               className="w-full glass-cta font-semibold py-3 rounded-xl flex items-center justify-center gap-2 mt-4"
             >
               <span>🛒</span>
-              <span>Ajouter au panier ({product.price}€)</span>
+              <div className="flex items-center gap-2">
+                <span>Ajouter au panier</span>
+                {product.originalPrice && (
+                  <span className="line-through opacity-60 text-sm decoration-red-500/50">{product.originalPrice}€</span>
+                )}
+                <span>({product.price}€)</span>
+              </div>
             </button>
           ) : !product.catalogOnly ? (
             <>

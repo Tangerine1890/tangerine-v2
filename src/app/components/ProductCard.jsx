@@ -299,9 +299,9 @@ const ProductCardComponent = memo(({
           <h3 className="text-white font-bold text-lg flex-1 line-clamp-2 h-14 flex items-center">{product.name}</h3>
           {!product.catalogOnly && (
             <div className="flex gap-1.5">
-              {product.oldPrice && (
+              {(product.oldPrice || (product.isPack && product.originalPrice)) && (
                 <span className="font-bold text-xs px-2 py-1 rounded-lg text-white bg-red-500/80 animate-pulse whitespace-nowrap">
-                  📉 -{Math.round(((product.oldPrice - PRICES[product.category]) / product.oldPrice) * 100)}%
+                  📉 -{Math.round((((product.oldPrice || product.originalPrice) - (product.isPack ? product.price : PRICES[product.category])) / (product.oldPrice || product.originalPrice)) * 100)}%
                 </span>
               )}
               <span
@@ -312,7 +312,14 @@ const ProductCardComponent = memo(({
                     : 'text-emerald-300 bg-emerald-500/20'
                   }`}
               >
-                {isAccessory ? 'Prix à définir' : product.isPack ? `${product.price}€` : (
+                {isAccessory ? 'Prix à définir' : product.isPack ? (
+                  product.originalPrice ? (
+                    <span className="flex items-center gap-1">
+                      <span className="line-through opacity-50 text-[10px] decoration-red-500/50">{product.originalPrice}€</span>
+                      <span>{product.price}€</span>
+                    </span>
+                  ) : `${product.price}€`
+                ) : (
                   product.oldPrice ? (
                     <span className="flex items-center gap-1">
                       <span className="line-through opacity-50 text-[10px] decoration-red-500/50">{product.oldPrice}€</span>
